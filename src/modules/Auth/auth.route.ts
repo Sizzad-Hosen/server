@@ -7,6 +7,7 @@ import { AuthValidation } from "./auth.validation";
 
 const router = express.Router();
 
+router.get('/getMe', AuthControllers.getMe)
 router.post(
   '/login',
   validateRequest(AuthValidation.loginValidationSchema),
@@ -26,7 +27,6 @@ router.post(
   AuthControllers.forgetPassword)
 
 
-//   router.post('/reset-password',validateRequest(AuthValidation.resetPasswordValidationSchema),AuthControllers.resetPassword)
-
+  router.post('/reset-password',validateRequest(AuthValidation.resetPasswordValidationSchema),AuthControllers.resetPassword)
 
 export const AuthRoutes = router;

@@ -4,6 +4,7 @@ import catchAsync from "../../app/utils/catchAsync";
 import sendResponse from "../../app/utils/sendResponse";
 import { AuthServices } from "./auth.service";
 import httpStatus from 'http-status';
+import AppError from "../../app/config/error/AppError";
 
 const loginUser = catchAsync(async (req, res) => {
 
@@ -57,9 +58,54 @@ const forgetPassword = catchAsync(async (req, res) => {
   });
 });
 
+
+const resetPassword = catchAsync(async (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new AppError(httpStatus.UNAUTHORIZED, 'Authorization token is missing or invalid');
+  }
+
+  const token = authHeader.split(' ')[1]; // ✅ Extract JWT
+
+  const result = await AuthServices.resetPassword(req.body, token);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password reset successfully!",
+    data: result,
+  });
+});
+
+const getMe = catchAsync(async (req, res) => {
+
+  const token = req.headers.authorization;
+
+  console.log(" token:", token);
+
+  if (!token) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Token not found!');
+  }
+
+  const accessToken = token.replace(/^Bearer\s/, ''); 
+
+  const result = await AuthServices.getMe(accessToken); 
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User retrieved successfully',
+    data: result,
+  });
+});
+
+
 export const AuthControllers ={
     loginUser,
     refreshToken,
-    forgetPassword
+    forgetPassword,
+    resetPassword,
+    getMe
 
 }

@@ -5,6 +5,7 @@ import AppError from '../../app/config/error/AppError';
 import { createToken, verifyToken } from './auth.utils';
 import config from '../../app/config';
 import { sendEmail } from '../../app/utils/sendEmail';
+import bcrypt from 'bcrypt'
 
 const loginUser = async (payload: TLoginUser) => {
   const { email, password } = payload;
@@ -114,39 +115,62 @@ const forgetPassword = async (email: string) => {
     throw error;
   }
 };
-
 const resetPassword = async (
-  payload: { email: string; newPassword: string },
+  payload: { email: string; newPassword: string; oldPassword: string },
   token: string
 ) => {
   const decoded = verifyToken(token, config.jwt_access_secret as string);
 
-  const user = await User.findById(decoded.userId);
-
+  const user = await User.findById(decoded.userId).select('+password');
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
   }
 
-  // Optional: Verify email matches user for extra safety
   if (payload.email !== user.email) {
     throw new AppError(httpStatus.FORBIDDEN, 'You are forbidden!');
   }
 
-  const newHashedPassword = await bcrypt.hash(
-    payload.newPassword,
-    Number(config.bcrypt_salt_rounds),
-  );
+  const isOldPasswordMatched = await bcrypt.compare(payload.oldPassword, user.password);
+  if (!isOldPasswordMatched) {
+    throw new AppError(httpStatus.FORBIDDEN, 'Your old password does not match');
+  }
 
-  await User.findByIdAndUpdate(user._id, {
-    password: newHashedPassword,
-    passwordChangedAt: new Date(),
-  });
+  if (payload.oldPassword === payload.newPassword) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'Your new password is the same as the old password. Try a different one.'
+    );
+  }
+
+  // ✅ Assign plain password
+  user.password = payload.newPassword;
+  user.set('passwordChangedAt', new Date());
+
+  // ✅ Pre-save hook will hash the password
+  await user.save();
 };
 
+
+
+const getMe = async (token: string) => {
+  
+  const decoded = verifyToken(token, config.jwt_access_secret as string);
+  const { userId } = decoded;
+
+  const user = await User.findById(userId); // ✅ correct way
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found!');
+  }
+
+  return user;
+};
 
 export const AuthServices ={
     loginUser,
     refreshToken,
-    forgetPassword
+    forgetPassword,
+    resetPassword,
+    getMe
 
 }
