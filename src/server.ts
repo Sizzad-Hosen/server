@@ -3,6 +3,7 @@ import app from './app';
 import mongoose from 'mongoose';
 import config from './app/config';
 
+
 let server: Server;
 
 async function main() {
@@ -10,7 +11,7 @@ async function main() {
     await mongoose.connect(config.database_url as string);
     console.log('✅ DB URL:', config.database_url);
 
-    console.log('✅ Database Connected');
+    console.log('✅ Database Connection Successfully....');
 
     server = app.listen(config.port || 5000, () => {
       console.log(`🚀 Server running on port ${config.port || 5000}`);
