@@ -18,7 +18,24 @@ const registeredUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllUserController = catchAsync(async (req: Request, res: Response) => {
+
+
+  const alluser = await UserServices.getAllUsers(req.query); 
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Successfully created new user",
+     data: {
+      data: alluser.data,   // students list
+      meta: alluser.meta,   // pagination info
+    },
+  });
+});
+
 
 export const UserControllers= {
   registeredUser,
+  getAllUserController
 };

@@ -12,4 +12,4 @@ router.post('/register-user',
 
    export const UserRoutes = router;
    
-   
+router.get('/',UserControllers.getAllUserController)
