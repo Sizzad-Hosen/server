@@ -27,15 +27,15 @@ const userSchema = new Schema<IUser, UserModel>(
   }
 );
 
-// 🔐 Pre-save hook to hash password
+
 userSchema.pre('save', async function (next) {
   const user = this as IUser;
-  if (!user.isModified('password')) return next(); // only hash if changed
+  if (!user.isModified('password')) return next(); 
   user.password = await bcrypt.hash(user.password, Number(config.bcrypt_salt_rounds || 10));
   next();
 });
 
-// 🧠 Static Methods
+
 userSchema.statics.isUserExistsByCustomId = async function (id: string) {
   return await this.findOne({ _id: id }).select('+password');
 };

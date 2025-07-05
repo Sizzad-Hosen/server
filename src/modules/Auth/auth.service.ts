@@ -13,7 +13,14 @@ const loginUser = async (payload: TLoginUser) => {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found!');
   }
 
-  const isPasswordMatched = await User.isPasswordMatched(password, user.password); // ✅ Fixed
+
+  const isPasswordMatched = await User.isPasswordMatched(password, user.password); 
+
+console.log("Login payload password:", password);
+console.log("Stored user password:", user.password); // should be hash
+console.log("Password match result:", isPasswordMatched);
+
+
   if (!isPasswordMatched) {
     throw new AppError(httpStatus.UNAUTHORIZED, 'Password does not match!');
   }
