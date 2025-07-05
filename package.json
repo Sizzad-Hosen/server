@@ -28,6 +28,7 @@
     "http-status": "^2.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.1",
+    "nodemailer": "^7.0.4",
     "zod": "^3.25.74"
   },
   "devDependencies": {
@@ -39,6 +40,7 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.10",
+    "@types/nodemailer": "^6.4.17",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
     "@typescript-eslint/parser": "^8.35.1",
     "eslint": "^9.30.1",

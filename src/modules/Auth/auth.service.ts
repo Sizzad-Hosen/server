@@ -4,6 +4,7 @@ import { TLoginUser } from './auth.interface';
 import AppError from '../../app/config/error/AppError';
 import { createToken, verifyToken } from './auth.utils';
 import config from '../../app/config';
+import { sendEmail } from '../../app/utils/sendEmail';
 
 const loginUser = async (payload: TLoginUser) => {
   const { email, password } = payload;
@@ -101,8 +102,8 @@ const forgetPassword = async (email: string) => {
       '10m'
     );
 
-    // ✅ Create reset link (you can include email in query optionally)
-    const resetLink = `${config.reset_pass_ui_link}/reset-password?token=${resetToken}`;
+
+    const resetLink = `${config.reset_pass_ui_link}/${jwtPayload.userId}reset-password?token=${resetToken}`;
 
     await sendEmail(user.email, resetLink);
 
@@ -145,6 +146,7 @@ const resetPassword = async (
 
 export const AuthServices ={
     loginUser,
-    refreshToken
+    refreshToken,
+    forgetPassword
 
 }
