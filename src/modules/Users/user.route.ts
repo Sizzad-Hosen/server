@@ -6,9 +6,15 @@ import  express  from "express";
 
 const router = express.Router();
 
+function asyncHandler(fn: any) {
+    return function (req: express.Request, res: express.Response, next: express.NextFunction) {
+        Promise.resolve(fn(req, res, next)).catch(next);
+    };
+}
+
 router.post('/register-user',
-    validateRequest(UserValidationSchemas.CreateUserValidation),
-     UserControllers.registeredUser)
+    asyncHandler(validateRequest(UserValidationSchemas.CreateUserValidation)),
+    asyncHandler(UserControllers.registeredUser))
 
    export const UserRoutes = router;
    
