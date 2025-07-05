@@ -7,6 +7,7 @@ import handleZodError from '../config/error/handleZodError';
 import handleValidationError from '../config/error/handleValidationError';
 import handleCastError from '../config/error/handleCastError';
 import AppError from '../config/error/AppError';
+import handleDuplicateError from '../config/error/handleDublicateError';
 
 
 const globalErrorHandler: ErrorRequestHandler = (
@@ -32,26 +33,25 @@ const globalErrorHandler: ErrorRequestHandler = (
     const simplifiedError = handleZodError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    errorSources = simplifiedError?.errorSources;
-
+    errorSources = [simplifiedError?.errorSources];
   }
   else if (err?.name === 'ValidationError') {
     const simplifiedError = handleValidationError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    errorSources = simplifiedError?.errorSources;
+    errorSources = [simplifiedError?.errorSources];
   } else if (err?.name === 'CastError') {
     const simplifiedError = handleCastError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    errorSources = simplifiedError?.errorSources;
+    errorSources = [simplifiedError?.errorSources];
   }
 
   else if (err?.code === 11000) {
-    const simplifiedError = handleDublicateError(err);
+    const simplifiedError = handleDuplicateError(err);
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
-    errorSources = simplifiedError?.errorSources;
+    errorSources = [simplifiedError?.errorSources];
   }  else if (err instanceof AppError) {
     statusCode = err?.statusCode;
     message = err.message;
@@ -63,7 +63,7 @@ const globalErrorHandler: ErrorRequestHandler = (
     ];
   }
 
-  return res.status(statusCode).json({
+  res.status(statusCode).json({
     success: false,
     message,
     errorSources,
