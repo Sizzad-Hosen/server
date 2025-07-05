@@ -1,42 +1,34 @@
-import { Server } from "http";
-import app from "./app";
-import cors from 'cors'
-import express from 'express'
-import mongoose from "mongoose";
+import { Server } from 'http';
+import app from './app';
+import mongoose from 'mongoose';
+import config from './app/config';
 
-let server:Server;
+let server: Server;
 
+async function main() {
+  try {
+    await mongoose.connect(config.database_url as string);
+    console.log('✅ DB URL:', config.database_url);
 
-// Middleware
-app.use(express.json())
-app.use(cors())
+    console.log('✅ Database Connected');
 
-
-
-async function main(){
-
-    try {
-        await mongoose.connect('')
-    } catch (error) {
-
-        console.error('Error connecting to the database or starting the server:', error)
-        
-    }
+    server = app.listen(config.port || 5000, () => {
+      console.log(`🚀 Server running on port ${config.port || 5000}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+  }
 }
 
+main();
 
-// start the application
-
-main()
-
-
-process.on('unhandledRejection', (reason) => {
+// Error handling
+process.on('unhandledRejection', reason => {
   console.error('😈 Unhandled Rejection:', reason);
-  // Optional: Close DB, Server, etc.
   process.exit(1);
 });
 
 process.on('uncaughtException', () => {
-  console.log(`😈 uncaughtException is detected , shutting down ...`);
+  console.log('😈 uncaughtException detected, shutting down...');
   process.exit(1);
 });
