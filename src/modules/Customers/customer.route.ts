@@ -1,5 +1,5 @@
 
-import  express  from "express";
+import express from "express";
 import { CustomerControllers } from "./customer.controller";
 import validateRequest from "../../app/middlewares/validateRequest";
 import { CustomerValidationSchema } from "./customer.validation";
@@ -17,11 +17,11 @@ router.post('/create-customer',
 
     CustomerControllers.createCustomerController)
 
-router.get('/:id',CustomerControllers.getSingelCustomerController)
+router.get('/:id', CustomerControllers.getSingelCustomerController)
 
 router.put('/:id',
     validateRequest(CustomerValidationSchema.UpdateCustomerValidation)
     ,
-     CustomerControllers.updateCustomerController);
+    CustomerControllers.updateCustomerController);
 
 export const CustomerRoutes = router;
