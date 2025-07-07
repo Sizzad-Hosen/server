@@ -13,6 +13,7 @@ ProductControllers.createProductController)
 router.get('/',ProductControllers.getAllProductsController)
 
 router.put('/:id',ProductControllers.updateProductController)
+router.delete('/:id',ProductControllers.deleteProductController)
 
 export const ProductRoutes = router;
 

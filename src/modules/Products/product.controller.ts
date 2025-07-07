@@ -55,8 +55,35 @@ export const updateProductController = catchAsync(
     });
   }
 );
+
+
+export const deleteProductController = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const result = await ProductServices.deleteProduct(id);
+
+    if (!result) {
+      return sendResponse(res, {
+        statusCode: httpStatus.NOT_FOUND,
+        success: false,
+        message: "Product not found",
+        data: null,
+      });
+    }
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Product deleted successfully",
+      data: result,
+    });
+  }
+);
+
 export const ProductControllers = {
     createProductController,
     getAllProductsController,
-    updateProductController
+    updateProductController,
+    deleteProductController
 }
