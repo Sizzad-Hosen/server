@@ -12,6 +12,8 @@ ProductControllers.createProductController)
 
 router.get('/',ProductControllers.getAllProductsController)
 
+router.put('/:id',ProductControllers.updateProductController)
+
 export const ProductRoutes = router;
 
    

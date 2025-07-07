@@ -37,7 +37,26 @@ export const getAllProductsController = catchAsync(
     });
   }
 );
+
+
+
+export const updateProductController = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const payload = req.body;
+
+    const result = await ProductServices.updateProduct(id, payload);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Product updated successfully",
+      data: result,
+    });
+  }
+);
 export const ProductControllers = {
     createProductController,
-    getAllProductsController
+    getAllProductsController,
+    updateProductController
 }

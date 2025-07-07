@@ -32,10 +32,22 @@ const getAllProducts = async(query: any)=>{
         }
     }
 }
+ const updateProduct= async (id: string, payload: Partial<any>) => {
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, payload, {
+
+      new: true,
+      runValidators: true,
+    });
+
+    return updatedProduct;
+
+  }
 
 export const ProductServices = {
 
     createProduct,
-    getAllProducts
+    getAllProducts,
+    updateProduct
 
 }
