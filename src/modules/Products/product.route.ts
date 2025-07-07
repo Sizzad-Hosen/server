@@ -10,7 +10,7 @@ const router = express.Router();
 router.post('/create-product',validateRequest(ProductValidationSchemas.createProductSchema),
 ProductControllers.createProductController)
 
-
+router.get('/',ProductControllers.getAllProductsController)
 
 export const ProductRoutes = router;
 
