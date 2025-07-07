@@ -12,6 +12,7 @@ ProductControllers.createProductController)
 
 router.get('/',ProductControllers.getAllProductsController)
 
+router.get('/:id',ProductControllers.getProductByIdController)
 router.put('/:id',ProductControllers.updateProductController)
 router.delete('/:id',ProductControllers.deleteProductController)
 

@@ -21,6 +21,31 @@ export const createProductController = catchAsync(
   }
 );
 
+export const getProductByIdController = catchAsync(
+  async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+
+    const product = await ProductServices.getSingelProduct(id);
+
+    if (!product) {
+      return sendResponse(res, {
+        statusCode: httpStatus.NOT_FOUND,
+        success: false,
+        message: "Product not found",
+        data: null,
+      });
+    }
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Product retrieved successfully",
+      data: product,
+    });
+  }
+);
+
 export const getAllProductsController = catchAsync(
 
   async (req: Request, res: Response) => {
@@ -84,6 +109,7 @@ export const deleteProductController = catchAsync(
 export const ProductControllers = {
     createProductController,
     getAllProductsController,
+    getProductByIdController,
     updateProductController,
     deleteProductController
 }
