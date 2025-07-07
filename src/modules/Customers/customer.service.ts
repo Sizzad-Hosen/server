@@ -54,8 +54,27 @@ export const updateCustomer = async (
   return customer;
 };
 
+export const getSingelCustomer = async (
+  id: string,
+) => {
+
+
+  console.log("ID:", id);
+
+const customer = await CustomerModel.findOne({ _id: id });
+
+  console.log("Result:", customer);
+
+  if (!customer) {
+    throw new AppError(404, 'Customer not found');
+  }
+
+  return customer;
+};
+
 
 export const CustomerServcies = {
     createCustomer,
-    updateCustomer
+    updateCustomer,
+    getSingelCustomer
 }

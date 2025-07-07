@@ -40,8 +40,29 @@ export const updateCustomerController = catchAsync(
     });
   }
 );
+export const getSingelCustomerController = catchAsync(
+
+  async (req: Request, res: Response) => {
+
+        const id = req.params.id;
+
+        console.log("id", id)
+
+     
+
+       const result = await CustomerService.getSingelCustomer(id);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Customer updated successfully',
+      data: result,
+    });
+  }
+);
 
 export const CustomerControllers = {
     createCustomerController,
-    updateCustomerController
+    updateCustomerController,
+    getSingelCustomerController
 }

@@ -17,6 +17,8 @@ router.post('/create-customer',
 
     CustomerControllers.createCustomerController)
 
+router.get('/:id',CustomerControllers.getSingelCustomerController)
+
 router.put('/:id',
     validateRequest(CustomerValidationSchema.UpdateCustomerValidation)
     ,
