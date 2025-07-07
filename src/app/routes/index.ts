@@ -30,3 +30,4 @@ const moduleRoutes = [
 moduleRoutes.forEach((r) => router.use(r.path, r.route));
 
 export default router;
+
