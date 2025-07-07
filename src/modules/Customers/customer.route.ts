@@ -17,5 +17,9 @@ router.post('/create-customer',
 
     CustomerControllers.createCustomerController)
 
+router.put('/:id',
+    validateRequest(CustomerValidationSchema.UpdateCustomerValidation)
+    ,
+     CustomerControllers.updateCustomerController);
 
 export const CustomerRoutes = router;

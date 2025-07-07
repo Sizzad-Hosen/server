@@ -9,7 +9,7 @@ export const createCustomerController = catchAsync(
   async (req: Request, res: Response) => {
 
     const userId = req.user?.userId;
-    
+
     const result = await CustomerService.createCustomer(userId, req.body);
 
     sendResponse(res, {
@@ -21,6 +21,27 @@ export const createCustomerController = catchAsync(
   }
 );
 
+
+export const updateCustomerController = catchAsync(
+    
+  async (req: Request, res: Response) => {
+        const id = req.params.id;
+        console.log("id", id)
+
+        console.log("body", req.body)
+
+       const result = await CustomerService.updateCustomer(id, req.body);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Customer updated successfully',
+      data: result,
+    });
+  }
+);
+
 export const CustomerControllers = {
-    createCustomerController
+    createCustomerController,
+    updateCustomerController
 }
