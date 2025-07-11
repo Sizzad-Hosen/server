@@ -34,17 +34,17 @@ const ProductSchema = new Schema(
 
    
     serviceId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Service',
       required: [true, "Service ID is required"],
     },
     categoryId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Category',
       required: [true, "Category ID is required"],
     },
     subCategoryId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'SubCategory',
       required: [true, "SubCategory ID is required"],
     },
