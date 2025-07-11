@@ -5,6 +5,7 @@ import { CustomerRoutes } from '../../modules/Customers/customer.route';
 import { ProductRoutes } from '../../modules/Products/product.route';
 import { ServiceRoutes } from '../../modules/Services/service.route';
 import { CategoryRoutes } from '../../modules/Category/category.route';
+import { SubCategoryRoutes } from '../../modules/SubCategory/subcategory.route';
 
 const router = Router();
 
@@ -33,6 +34,10 @@ const moduleRoutes = [
   {
     path: '/categories',
     route: CategoryRoutes,
+  },
+  {
+    path: '/subCategories',
+    route: SubCategoryRoutes,
   },
 ];
 
