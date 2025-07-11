@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import catchAsync from "../../app/utils/catchAsync";
 import sendResponse from "../../app/utils/sendResponse";
 import { CategoryServices } from "./category.service";
+import { Category } from "./category.model";
 
 export const createCategoryController = catchAsync(async (req: Request, res: Response) => {
     const payload = req.body;
@@ -25,6 +26,19 @@ export const getAllCategoriesController = catchAsync(async (req: Request, res: R
     });
 });
 
+export const getSingleCategoryController = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const category = await CategoryServices.getSingelCategory(id)
+
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Category fetched successfully",
+    data: category,
+  });
+});
 export const updateCategoryController = catchAsync(async (req: Request, res: Response) => {
     const id = req.params.id;
     const payload = req.body;
@@ -56,5 +70,6 @@ export const CategoryControllers = {
     createCategoryController,
     getAllCategoriesController,
     updateCategoryController,
-    deleteCategoryController
+    deleteCategoryController,
+    getSingleCategoryController
 }

@@ -29,9 +29,23 @@ const deleteCategory = async (id: string) => {
   return deleted;
 };
 
+const  getSingelCategory = async (id: string) => {
+  if (!Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid category ID");
+  }
+
+  const category = await Category.findById(id).populate("serviceId");
+
+  if (!category) throw new Error("Category not found");
+
+  return category;
+};
+
+
 export const CategoryServices = {
   createCategory,
   getAllCategories,
   updateCategory,
   deleteCategory,
+  getSingelCategory
 };

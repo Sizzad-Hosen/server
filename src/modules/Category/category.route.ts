@@ -9,6 +9,7 @@ router.post('/create-category', CategoryControllers.createCategoryController);
 router.get('/', CategoryControllers.getAllCategoriesController);
 
 
+router.get('/:id', CategoryControllers.getSingleCategoryController);
 router.put('/:id', CategoryControllers.updateCategoryController);
 
 
