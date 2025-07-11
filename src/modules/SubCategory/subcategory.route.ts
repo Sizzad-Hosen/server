@@ -7,7 +7,7 @@ const router = express.Router();
 
 
 router.post(
-  '/',
+  '/create-subCategory',
   validateRequest(SubCategoryValidationSchemas.createSubCategorySchema),
   SubCategoryControlles.createSubCategoryController
 );
