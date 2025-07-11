@@ -1,11 +1,19 @@
+import { Types } from 'mongoose';
+
 export interface IProduct {
   title: string;
+  name: string; 
   description: string;
-  images: string[]; // multiple image URLs
+  images: string[]; 
   price: number;
   quantity: number;
-  category: string;
+
+  serviceId: Types.ObjectId;
+  categoryId: Types.ObjectId;
+  subCategoryId: Types.ObjectId;
+
   isPublished: boolean;
+
   createdAt?: Date;
   updatedAt?: Date;
 }

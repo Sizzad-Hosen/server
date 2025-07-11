@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, models } from "mongoose";
+import mongoose, { Schema, model, models, Types } from "mongoose";
 
 const ProductSchema = new Schema(
   {
@@ -7,12 +7,17 @@ const ProductSchema = new Schema(
       required: [true, "Title is required"],
       trim: true,
     },
+    name: {
+      type: String,
+      required: [true, "Name is required"],
+      trim: true,
+    },
     description: {
       type: String,
       required: [true, "Description is required"],
     },
     images: {
-      type: [String], // array of image URLs
+      type: [String], 
       required: true,
       validate: (val: string[]) => val.length > 0,
     },
@@ -26,11 +31,24 @@ const ProductSchema = new Schema(
       required: true,
       min: [0, "Quantity must be positive"],
     },
-    category: {
-      type: String,
-      required: true,
-      trim: true,
+
+   
+    serviceId: {
+      type: Types.ObjectId,
+      ref: 'Service',
+      required: [true, "Service ID is required"],
     },
+    categoryId: {
+      type: Types.ObjectId,
+      ref: 'Category',
+      required: [true, "Category ID is required"],
+    },
+    subCategoryId: {
+      type: Types.ObjectId,
+      ref: 'SubCategory',
+      required: [true, "SubCategory ID is required"],
+    },
+
     isPublished: {
       type: Boolean,
       default: true,
@@ -39,6 +57,6 @@ const ProductSchema = new Schema(
   { timestamps: true }
 );
 
-const Product = models.Product || model("Product", ProductSchema);
 
+const Product = models.Product || model("Product", ProductSchema);
 export default Product;
