@@ -44,6 +44,32 @@ const addOrUpdateCartItem = async (userId: string, item: TCartItem) => {
   return cart;
 };
 
+const removeFromCart = async (userId: string, productId: string) => {
+  const cart = await Cart.findOne({ userId });
+
+  if (!cart) throw new Error('Cart not found');
+
+  const item = cart.items.find(
+    (i) => i.productId.toString() === productId.toString()
+  );
+
+  if (!item) throw new Error('Product not found in cart');
+
+  // Remove item
+  cart.items = cart.items.filter(
+    (i) => i.productId.toString() !== productId.toString()
+  );
+
+  // Recalculate totals
+  cart.totalQuantity = cart.items.reduce((sum, i) => sum + i.quantity, 0);
+  cart.totalAmount = cart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+  await cart.save();
+  return cart;
+};
+
+
+
 const clearCart = async (userId: string) => {
   return await Cart.findOneAndDelete({ userId });
 };
@@ -52,4 +78,5 @@ export const CartServices = {
   getCartByUser,
   addOrUpdateCartItem,
   clearCart,
+  removeFromCart
 };

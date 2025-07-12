@@ -13,4 +13,6 @@ router.post('/add', auth(), CartControllers.addToCartController);
 
 router.post('/:userId/clear',auth(),  CartControllers.clearCartController);
 
+router.delete('/remove',auth(), CartControllers.removeFromCartController);
+
 export const CartRoutes = router;

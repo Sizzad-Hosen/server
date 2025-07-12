@@ -47,9 +47,29 @@ export const clearCartController = catchAsync(async (req: Request, res: Response
 });
 
 
+
+export const removeFromCartController = catchAsync(
+  async (req: Request, res: Response) => {
+
+    const userId = req?.user?.userId; 
+
+     const { productId } = req.body;
+    console.log("productId",productId)
+
+    const cart = await CartServices.removeFromCart(userId, productId);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Product removed from cart',
+      data: cart,
+    });
+  }
+);
 export const CartControllers = {
     addToCartController,
     clearCartController,
     getCartController,
+removeFromCartController
     
 }
