@@ -13,7 +13,7 @@ body:z.object({
 
 export const checkOutCart = z.object({
 body:z.object({
-  items: z.array(cartItemSchema, { required_error: 'Items are required' }),
+  items: z.array(addToCartSchema, { required_error: 'Items are required' }),
   totalQuantity: z.number({ required_error: 'Total quantity is required' }).min(1),
   totalAmount: z.number({ required_error: 'Total amount is required' }).min(1),
 })
