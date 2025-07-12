@@ -17,4 +17,7 @@ router.delete('/remove',auth(), CartControllers.removeFromCartController);
 
 router.post('/update',auth(), CartControllers.updateCartItemController);
 
+router.post('/checkout',auth(), CartControllers.checkoutCartController);
+
+
 export const CartRoutes = router;
