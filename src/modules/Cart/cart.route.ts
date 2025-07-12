@@ -5,13 +5,13 @@ import auth from '../../app/middlewares/auth';
 const router = express.Router();
 
 
-router.get('/:userId',auth(), CartControllers.getCartController);
+router.get('/',auth(), CartControllers.getCartController);
 
 
 router.post('/add', auth(), CartControllers.addToCartController);
 
 
-router.post('/:userId/clear',auth(),  CartControllers.clearCartController);
+router.post('/clear',auth(),  CartControllers.clearCartController);
 
 router.delete('/remove',auth(), CartControllers.removeFromCartController);
 
