@@ -66,10 +66,34 @@ export const removeFromCartController = catchAsync(
     });
   }
 );
+
+
+
+export const updateCartItemController = catchAsync(async (req, res) => {
+
+  const { productId, quantity } = req.body;
+
+   const userId = req?.user?.userId; 
+
+  const result = await CartServices.updateCartItemQuantity(
+    userId,
+    productId,
+    quantity
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Cart quantity updated',
+    data: result,
+  });
+});
+
 export const CartControllers = {
     addToCartController,
     clearCartController,
     getCartController,
-removeFromCartController
+removeFromCartController,
+updateCartItemController
     
 }

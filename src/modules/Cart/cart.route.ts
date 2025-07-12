@@ -15,4 +15,6 @@ router.post('/clear',auth(),  CartControllers.clearCartController);
 
 router.delete('/remove',auth(), CartControllers.removeFromCartController);
 
+router.post('/update',auth(), CartControllers.updateCartItemController);
+
 export const CartRoutes = router;

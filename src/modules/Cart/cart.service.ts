@@ -68,7 +68,40 @@ const removeFromCart = async (userId: string, productId: string) => {
   return cart;
 };
 
+const updateCartItemQuantity = async (
+  userId: string,
+  productId: string,
+  quantity: number
+) => {
+  const cart = await Cart.findOne({ userId });
+  if (!cart) throw new Error("Cart not found");
 
+  const itemIndex = cart.items.findIndex(
+    (i) => i.productId.toString() === productId.toString()
+  );
+  if (itemIndex === -1) throw new Error("Item not found in cart");
+
+  if (quantity <= 0) {
+    // Remove item if quantity is zero
+    cart.items.splice(itemIndex, 1);
+  } else {
+    // Update item quantity
+    cart.items[itemIndex].quantity = quantity;
+  }
+
+  // Recalculate totals
+  cart.totalQuantity = cart.items.reduce((sum:any, i) => sum + i.quantity, 0);
+  
+  cart.totalAmount = cart.items.reduce(
+    (sum, i) => sum + i.quantity * i.price,
+    0
+  );
+
+  await cart.save();
+  return cart;
+};
+
+ 
 
 const clearCart = async (userId: string) => {
   return await Cart.findOneAndDelete({ userId });
@@ -78,5 +111,6 @@ export const CartServices = {
   getCartByUser,
   addOrUpdateCartItem,
   clearCart,
-  removeFromCart
+  removeFromCart,
+  updateCartItemQuantity
 };
