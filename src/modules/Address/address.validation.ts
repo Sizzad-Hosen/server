@@ -3,6 +3,9 @@ import z from "zod";
 
 const createShippingAddressSchema = z.object({
 
+  body:z.object({
+
+
   division: z.string().min(2, "Division is required"),
   district: z.string().min(2, "District is required"),
   postalCode: z.string()
@@ -12,6 +15,8 @@ const createShippingAddressSchema = z.object({
   location: z.string().min(3, "Location is required"),
   messOrBasaName: z.string().min(2, "Mess or house name is required"),
   paraName: z.string().min(2, "Para name is required").optional(),
+
+  })
 
 
 });
