@@ -6,11 +6,6 @@ import auth from "../../app/middlewares/auth";
 
 const router = express.Router();
 
-router.post(
-  "/place-order",
-  validateRequest(createOrderSchema),
-  auth(),
-  OrderControllers.confirmOrderAfterPayment
-);
+router.post("/", OrderControllers.createOrderHandler);
 
 export const OrderRoutes = router;
