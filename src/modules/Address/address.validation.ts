@@ -1,7 +1,7 @@
 import z from "zod";
 
 
-const createShippingAddressSchema = z.object({
+export const createShippingAddressSchema = z.object({
 
   body:z.object({
 

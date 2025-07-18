@@ -8,6 +8,7 @@ import { CategoryRoutes } from '../../modules/Category/category.route';
 import { SubCategoryRoutes } from '../../modules/SubCategory/subcategory.route';
 import { CartRoutes } from '../../modules/Cart/cart.route';
 import { ShippingAddressRoutes } from '../../modules/Address/address.route';
+import { OrderRoutes } from '../../modules/Orders/order.route';
 
 const router = Router();
 
@@ -48,6 +49,10 @@ const moduleRoutes = [
   {
     path: '/address',
     route: ShippingAddressRoutes
+  },
+  {
+    path: '/orders',
+    route: OrderRoutes
   },
 ];
 
