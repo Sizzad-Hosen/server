@@ -9,8 +9,10 @@ import { IProduct } from "./product.interface";
 export const createProductController = catchAsync(
   async (req: Request, res: Response) => {
     const payload: IProduct = req.body;
+    
+    console.log("file",req.files);
 
-    const result = await ProductServices.createProduct(payload);
+    const result = await ProductServices.createProduct(payload, req.files);
 
     sendResponse(res, {
       statusCode: httpStatus.CREATED,

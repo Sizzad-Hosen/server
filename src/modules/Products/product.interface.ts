@@ -4,7 +4,7 @@ export interface IProduct {
   title: string;
   name: string; 
   description: string;
-  images: string[]; 
+  images?: string[]; 
   price: number;
   quantity: number;
 
