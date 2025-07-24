@@ -3,7 +3,9 @@ import { Category } from "./category.model";
 import { Types } from "mongoose";
 
 const createCategory = async (payload: TCategory) => {
+
   const category = await Category.create(payload);
+  
   return category;
 };
 
