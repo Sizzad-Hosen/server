@@ -17,9 +17,7 @@ export const createProductSchema = z.object({
       .min(10, { message: 'Description must be at least 10 characters' }),
 
     images: z
-      .array(z.string().url({ message: 'Each image must be a valid URL' }))
-      .nonempty({ message: 'At least one image is required' }),
-
+      .array(z.string()).optional(),
     price: z
       .number()
       .min(0, { message: 'Price must be greater than or equal to 0' }),

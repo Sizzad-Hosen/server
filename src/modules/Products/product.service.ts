@@ -1,14 +1,62 @@
 import QueryBuilder from "../../app/builder/QueryBuilder";
+import { sendImageToCloudinary } from "../../app/utils/sendImageToCloudinary";
+import { Category } from "../Category/category.model";
+import { Service } from "../Services/service.model";
+import { SubCategory } from "../SubCategory/subcategory.model";
 import { productSearchableField } from "./product.constance";
 import { IProduct } from "./product.interface";
 import Product from "./product.model";
 
-const createProduct = async(payload:IProduct)=>{
+export const createProduct = async (payload: IProduct, files?:any) => {
 
-    const product = await Product.create(payload);
-    return product;
+  // ✅ 1. Check Service Exists
+  const service = await Service.findById(payload.serviceId);
+  if (!service) {
+    throw new Error("Service not found");
+  }
 
-}
+  // ✅ 2. Check Category Exists
+  const category = await Category.findById(payload.categoryId);
+  if (!category) {
+    throw new Error("Category not found");
+  }
+
+  // ✅ 3. Check SubCategory Exists
+  const subCategory = await SubCategory.findById(payload.subCategoryId);
+  if (!subCategory) {
+    throw new Error("Subcategory not found");
+  }
+
+  // ✅ 4. Upload images to Cloudinary if provided
+  const uploadedImages: string[] = [];
+
+  console.log("upload image", uploadedImages)
+
+  if (files && files.length > 0) {
+    for (const file of files) {
+      const imageName = `${Date.now()}-${file.originalname}`;
+      console.log("image name", imageName)
+
+      const { secure_url } = await sendImageToCloudinary(imageName, file.path);
+      console.log("secure url", {secure_url})
+
+      uploadedImages.push(secure_url);
+
+    }
+  }
+
+  // ✅ 5. Add images to payload
+
+  if (uploadedImages.length > 0) {
+    payload.images = uploadedImages;
+  }
+
+  // ✅ 6. Create Product
+  const product = await Product.create(payload);
+  console.log("product created", product)
+
+  return product;
+};
 
 const getAllProducts = async(query: any)=>{
     const productQuery = new QueryBuilder(Product.find(),query)

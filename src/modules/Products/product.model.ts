@@ -1,4 +1,5 @@
 import mongoose, { Schema, model, models, Types } from "mongoose";
+import { optional } from "zod";
 
 const ProductSchema = new Schema(
   {
@@ -16,11 +17,12 @@ const ProductSchema = new Schema(
       type: String,
       required: [true, "Description is required"],
     },
-    images: {
-      type: [String], 
-      required: true,
-      validate: (val: string[]) => val.length > 0,
-    },
+    
+   images: {
+  type: [String],
+  default: [],
+},
+
     price: {
       type: Number,
       required: true,
