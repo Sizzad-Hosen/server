@@ -65,11 +65,26 @@ export const deleteCategoryController = catchAsync(async (req: Request, res: Res
 
 });
 
+export const getCategoriesByServiceIdController = catchAsync(async (req: Request, res: Response) => {
+    
+  const { serviceId } = req.params;
+
+  const categories = await CategoryServices.getCategoriesByServiceId(serviceId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Categories by service fetched successfully",
+    data: categories,
+  });
+});
+
 
 export const CategoryControllers = {
     createCategoryController,
     getAllCategoriesController,
     updateCategoryController,
     deleteCategoryController,
-    getSingleCategoryController
+    getSingleCategoryController,
+     getCategoriesByServiceIdController,
 }

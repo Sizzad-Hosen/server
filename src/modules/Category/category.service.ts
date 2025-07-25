@@ -44,10 +44,22 @@ const  getSingelCategory = async (id: string) => {
 };
 
 
+const getCategoriesByServiceId = async (serviceId: string) => {
+  
+  if (!Types.ObjectId.isValid(serviceId)) {
+    throw new Error("Invalid service ID");
+  }
+
+  const categories = await Category.find({ serviceId }).populate('serviceId');
+
+  return categories;
+};
+
 export const CategoryServices = {
   createCategory,
   getAllCategories,
   updateCategory,
   deleteCategory,
-  getSingelCategory
+  getSingelCategory,
+  getCategoriesByServiceId, // <-- Add here
 };

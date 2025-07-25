@@ -36,10 +36,21 @@ const deleteSubCategory = async (id: string) => {
   return result;
 };
 
+
+const getSubcategoriesByCategoryId = async (categoryId: string) => {
+  if (!Types.ObjectId.isValid(categoryId)) {
+    throw new Error("Invalid category ID");
+  }
+
+  const subcategories = await SubCategory.find({ categoryId }).populate('categoryId');
+  return subcategories;
+};
+
 export const SubCategoryServices = {
   createSubCategory,
   getAllSubCategories,
   getSingleSubCategory,
   updateSubCategory,
   deleteSubCategory,
+  getSubcategoriesByCategoryId
 };
