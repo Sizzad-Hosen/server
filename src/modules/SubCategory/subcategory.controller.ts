@@ -62,11 +62,24 @@ export const deleteSubCategoryController = catchAsync(async (req: Request, res: 
 });
 
 
+export const getSubcategoriesByCategoryIdController = catchAsync(async (req: Request, res: Response) => {
 
+  const { categoryId } = req.params;
+
+  const result = await SubCategoryServices.getSubcategoriesByCategoryId(categoryId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Subcategories fetched by categoryId",
+    data: result,
+  });
+});
 export const SubCategoryControlles = {
     createSubCategoryController,
     getAllSubCategoryController,
     getSingleSubCategoryController,
     updateSubCategoryController,
-    deleteSubCategoryController
+    deleteSubCategoryController,
+    getSubcategoriesByCategoryIdController
 }

@@ -16,6 +16,8 @@ router.post(
 router.get('/', SubCategoryControlles.getAllSubCategoryController);
 
 
+router.get("/subcategoryByCategoryId/:categoryId", SubCategoryControlles.getSubcategoriesByCategoryIdController);
+
 router.get('/:id', SubCategoryControlles.getSingleSubCategoryController);
 
 
