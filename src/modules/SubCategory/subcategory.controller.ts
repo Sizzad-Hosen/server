@@ -75,11 +75,37 @@ export const getSubcategoriesByCategoryIdController = catchAsync(async (req: Req
     data: result,
   });
 });
+
+
+export const getAllProductsBySubcategoryIdController = catchAsync(
+
+  async (req: Request, res: Response) => {
+
+    const { subcategoryId } = req.params;
+
+    console.log("subCatId", req.params);
+
+    const products = await SubCategoryServices.getAllProductsBySubcategoryId(subcategoryId,req.query);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Products fetched by subcategory ID',
+      data:{
+        products: products.data,
+        meta: products.meta
+      }
+    });
+  }
+);
+
+
 export const SubCategoryControlles = {
     createSubCategoryController,
     getAllSubCategoryController,
     getSingleSubCategoryController,
     updateSubCategoryController,
     deleteSubCategoryController,
-    getSubcategoriesByCategoryIdController
+    getSubcategoriesByCategoryIdController,
+    getAllProductsBySubcategoryIdController
 }
