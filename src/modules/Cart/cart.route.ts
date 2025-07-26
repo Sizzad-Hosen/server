@@ -13,9 +13,9 @@ router.post('/add', auth(), CartControllers.addToCartController);
 
 router.post('/clear',auth(),  CartControllers.clearCartController);
 
-router.delete('/remove',auth(), CartControllers.removeFromCartController);
+router.delete('/remove/:productId',auth(), CartControllers.removeFromCartController);
 
-router.post('/update',auth(), CartControllers.updateCartItemController);
+router.post('/update/:productId',auth(), CartControllers.updateCartItemController);
 
 router.post('/checkout',auth(), CartControllers.checkoutCartController);
 

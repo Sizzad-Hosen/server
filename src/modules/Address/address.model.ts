@@ -1,7 +1,7 @@
 import { model, models, Schema } from "mongoose";
 import { TShippingAddress } from "./address.interface";
 
-// Define schema
+
 export const shippingAddressSchema = new Schema<TShippingAddress>({
   division: { type: String, required: true },
   district: { type: String, required: true },
