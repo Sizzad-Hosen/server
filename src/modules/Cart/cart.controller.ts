@@ -62,9 +62,11 @@ export const clearCartController = catchAsync(async (req: Request, res: Response
 
 // Remove item from cart
 export const removeFromCartController = catchAsync(async (req: Request, res: Response) => {
+
   const userId = getUserId(req);
 
-  const { productId } = req.body;
+  const { productId } = req.params
+
   if (!productId) throw new AppError(httpStatus.BAD_REQUEST, 'Product ID is required');
 
   const cart = await CartServices.removeFromCart(userId, productId);
@@ -81,7 +83,10 @@ export const removeFromCartController = catchAsync(async (req: Request, res: Res
 export const updateCartItemController = catchAsync(async (req: Request, res: Response) => {
   const userId = getUserId(req);
 
-  const { productId, quantity } = req.body;
+  const { productId } = req.params
+
+  const { quantity } = req.body;
+  
   if (!productId || quantity == null) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Product ID and quantity are required');
   }

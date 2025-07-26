@@ -1,80 +1,126 @@
-
 import httpStatus from 'http-status';
 import AppError from '../../app/config/error/AppError';
 import { User } from '../Users/user.model';
 import { ICustomer } from './customer.interface';
-import { CustomerModel } from './customer.model';
+import { Customer } from './customer.model';
 import mongoose from 'mongoose';
+import { ShippingAddressModel } from '../Address/address.model';
 
-export const createCustomer = async (
-  userId: string,
-  payload: Partial<ICustomer>
-): Promise<ICustomer> => {
-  if (!userId) {
-    throw new AppError(400, 'User ID missing from token');
-  }
 
+const createOrUpdateCustomer = async (payload: ICustomer, userId: string): Promise<ICustomer> => {
+  const gender = payload.gender;
+  const profileImage = payload.profileImage;
+
+  // Check if user exists
   const user = await User.findById(userId);
   if (!user) {
-    
-    throw new AppError(404, 'User not found');
+    throw new AppError('User not found', httpStatus.NOT_FOUND);
   }
 
-  const customer = await CustomerModel.create({
-    ...payload,
-    user: userId,
-  });
+  let addressId = undefined;
 
-  return customer;
+  // Handle address creation or use existing
+  if (payload.address) {
+    if (typeof payload.address === 'object' && !mongoose.Types.ObjectId.isValid(String(payload.address))) {
+      // New address object, create ShippingAddress document
+      const newAddress = await ShippingAddressModel.create(payload.address);
+      addressId = newAddress._id;
+    } else {
+      // Existing address ObjectId
+      addressId = payload.address as any;
+    }
+  }
+
+  // Find existing customer by user ID
+  const existingCustomer = await Customer.findOne({ user: userId });
+
+  if (existingCustomer) {
+    if (gender && ['male', 'female', 'other'].includes(gender)) {
+      existingCustomer.gender = gender as 'male' | 'female' | 'other';
+    }
+    existingCustomer.profileImage = profileImage || existingCustomer.profileImage;
+    if (addressId) {
+      existingCustomer.address = addressId;
+    }
+
+    await existingCustomer.save();
+    return existingCustomer;
+  } else {
+    // Create new customer
+    const newCustomer = await Customer.create({
+      user: userId,
+      gender,
+      profileImage,
+      address: addressId,
+    });
+
+    return newCustomer;
+  }
 };
-
 
 export const updateCustomer = async (
   id: string,
   payload: Partial<ICustomer>
 ): Promise<ICustomer> => {
-  console.log("ID:", id);
-
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError(400, 'Invalid customer ID format');
+    throw new AppError('Invalid customer ID', httpStatus.BAD_REQUEST);
   }
 
-  const customer = await CustomerModel.findByIdAndUpdate(
+  let addressId;
+
+  // Check and create/update address if needed
+  if (payload.address) {
+    if (typeof payload.address === 'object' ) {
+      // Create new address from object
+      const newAddress = await ShippingAddressModel.create(payload.address);
+      addressId = newAddress._id;
+    } else {
+      addressId = payload.address as any;
+    }
+  }
+
+  // Prepare update data
+  const updateData: any = { ...payload };
+  if (addressId) {
+    updateData.address = addressId;
+  }
+
+  const updatedCustomer = await Customer.findByIdAndUpdate(
     id,
-    { $set: payload },
+    { $set: updateData },
     { new: true, runValidators: true }
-  );
+  ).populate('user', 'name email phone').populate('address');
 
-  console.log("Result:", customer);
+  if (!updatedCustomer) {
+    throw new AppError('Customer not found', httpStatus.NOT_FOUND);
+  }
+
+  return updatedCustomer;
+};
+const getSingleCustomer = async (id: string) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError('Invalid customer ID', httpStatus.BAD_REQUEST);
+  }
+
+  const customer = await Customer.findById(id)
+    .populate('user', 'name email phone')
+    .populate('address');
 
   if (!customer) {
-    throw new AppError(404, 'Customer not found');
+    throw new AppError('Customer not found', httpStatus.NOT_FOUND);
   }
 
   return customer;
 };
 
-export const getSingelCustomer = async (
-  id: string,
-) => {
 
 
-  console.log("ID:", id);
-
-const customer = await CustomerModel.findOne({ _id: id });
-
-  console.log("Result:", customer);
-
-  if (!customer) {
-    throw new AppError(404, 'Customer not found');
-  }
-
-  return customer;
+export const CustomerServices = {
+  createOrUpdateCustomer,
+  updateCustomer,
+  getSingleCustomer,
 };
 
-
-export const CustomerServcies = {
-    createCustomer,
-    updateCustomer,
-    getSingelCustomer
+function isValidObjectId(address: mongoose.Types.ObjectId) {
+  throw new Error('Function not implemented.');
 }

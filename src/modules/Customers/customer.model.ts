@@ -1,15 +1,30 @@
-import mongoose, { Schema } from "mongoose";
+import { Schema, model } from "mongoose";
 import { ICustomer } from "./customer.interface";
 
 
 const customerSchema = new Schema<ICustomer>(
   {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-    gender: { type: String, enum: ['male', 'female', 'other'] },
-    address: { type: String },
-    profileImage: { type: String },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
+    },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+    },
+    profileImage: {
+      type: String,
+    },
+    address: {
+      type: Schema.Types.ObjectId,
+      ref: "ShippingAddress", 
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-export const CustomerModel = mongoose.model<ICustomer>('Customer', customerSchema);
+export const Customer = model<ICustomer>("Customer", customerSchema);
