@@ -1,5 +1,5 @@
 
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { CustomerControllers } from "./customer.controller";
 import validateRequest from "../../app/middlewares/validateRequest";
 import { CustomerValidationSchema } from "./customer.validation";
@@ -12,7 +12,12 @@ const router = express.Router();
 router.post('/create-customer',
     auth()
     ,
-// upload.array('file')
+ upload.single('file'), 
+ 
+ (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },
     
     validateRequest(CustomerValidationSchema.CreateCustomerValidation)
     ,
@@ -22,13 +27,19 @@ router.post('/create-customer',
 router.patch(
   '/:id',
   auth(),
+   upload.single('file'), 
+ 
+ (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },
    
     validateRequest(CustomerValidationSchema.UpdateCustomerValidation),
   CustomerControllers.updateCustomerController
 );
 
 router.get(
-  '/:id',
+  '/customerDetails',
   auth(),
   CustomerControllers.getSingleCustomerController
 );
