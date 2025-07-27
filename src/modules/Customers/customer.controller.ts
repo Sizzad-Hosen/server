@@ -18,7 +18,7 @@ export const createCustomerController = catchAsync(
 
     const payload = req.body;
 
-    const customer = await CustomerServices.createOrUpdateCustomer(payload, userId);
+    const customer = await CustomerServices.createOrUpdateCustomer(payload, userId,req.file);
 
     sendResponse(res, {
       statusCode: httpStatus.CREATED,
@@ -34,7 +34,7 @@ export const updateCustomerController = catchAsync(
     const id = req.params.id;
     const payload = req.body;
 
-    const updatedCustomer = await CustomerServices.updateCustomer(id, payload);
+    const updatedCustomer = await CustomerServices.updateCustomer(id, payload,req.file);
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -44,10 +44,17 @@ export const updateCustomerController = catchAsync(
     });
   }
 );
+
+
 export const getSingleCustomerController = catchAsync(
+
   async (req: Request, res: Response) => {
-    const id = req.params.id;
-    const customer = await CustomerServices.getSingleCustomer(id);
+
+    const userId = req?.user?.userId;
+
+    console.log('Fetching customer with ID:', userId);
+
+    const customer = await CustomerServices.getSingleCustomerByUserId(userId);
 
     sendResponse(res, {
       statusCode: httpStatus.OK,

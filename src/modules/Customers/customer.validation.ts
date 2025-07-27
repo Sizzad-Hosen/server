@@ -1,9 +1,7 @@
 import { z } from "zod";
-import { Types } from "mongoose";
 
-
-
-export const createShippingAddressSchema = z.object({
+// Address schema with required fields (for creation)
+const createShippingAddressSchema = z.object({
   division: z.string().min(2, "Division is required"),
   district: z.string().min(2, "District is required"),
   postalCode: z.string().regex(/^\d{4}$/, "Postal code must be 4 digits"),
@@ -13,30 +11,25 @@ export const createShippingAddressSchema = z.object({
   paraName: z.string().min(2, "Para name is required").optional(),
 });
 
-// ✅ CORRECT usage without .body
+// Creation schema - address is optional, but if present must have all required fields
 export const CreateCustomerValidation = z.object({
   body: z.object({
     gender: z.enum(["male", "female", "other"]).optional(),
-    address: createShippingAddressSchema.optional(), 
+    address: createShippingAddressSchema.optional(),
     profileImage: z.string().url("Profile image must be a valid URL").optional(),
   }),
 });
 
+// Update schema - address is optional and all its fields are optional (partial update)
 export const UpdateCustomerValidation = z.object({
-
-body:z.object({
-  gender: z.enum(["male", "female", "other"]).optional(),
-  address: createShippingAddressSchema.optional(),
-  profileImage: z
-    .string()
-    .url("profileImage must be a valid URL")
-    .optional(),
-})
+  body: z.object({
+    gender: z.enum(["male", "female", "other"]).optional(),
+    address: createShippingAddressSchema.partial().optional(),
+    profileImage: z.string().url("Profile image must be a valid URL").optional(),
+  }),
 });
 
-
-export const CustomerValidationSchema ={
-   CreateCustomerValidation,
-   UpdateCustomerValidation
-
-}
+export const CustomerValidationSchema = {
+  CreateCustomerValidation,
+  UpdateCustomerValidation,
+};

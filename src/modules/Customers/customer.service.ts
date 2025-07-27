@@ -5,28 +5,44 @@ import { ICustomer } from './customer.interface';
 import { Customer } from './customer.model';
 import mongoose from 'mongoose';
 import { ShippingAddressModel } from '../Address/address.model';
+import { sendImageToCloudinary } from '../../app/utils/sendImageToCloudinary';
 
+const createOrUpdateCustomer = async (
+  payload: ICustomer,
+  userId: string,
+  file: any
+): Promise<ICustomer> => {
 
-const createOrUpdateCustomer = async (payload: ICustomer, userId: string): Promise<ICustomer> => {
   const gender = payload.gender;
-  const profileImage = payload.profileImage;
 
-  // Check if user exists
   const user = await User.findById(userId);
   if (!user) {
     throw new AppError('User not found', httpStatus.NOT_FOUND);
+  }
+
+  // ✅ File Upload
+  if (file) {
+    console.log('[11] Starting file upload...');
+    const imageName = `${userId}_${user.name}`;
+    console.log('[12] Image name:', imageName);
+
+    const { secure_url } = await sendImageToCloudinary(imageName, file.path);
+    console.log('[13] File uploaded successfully:', secure_url);
+
+    payload.profileImage = secure_url;
   }
 
   let addressId = undefined;
 
   // Handle address creation or use existing
   if (payload.address) {
-    if (typeof payload.address === 'object' && !mongoose.Types.ObjectId.isValid(String(payload.address))) {
-      // New address object, create ShippingAddress document
+    if (
+      typeof payload.address === 'object' &&
+      !mongoose.Types.ObjectId.isValid(String(payload.address))
+    ) {
       const newAddress = await ShippingAddressModel.create(payload.address);
       addressId = newAddress._id;
     } else {
-      // Existing address ObjectId
       addressId = payload.address as any;
     }
   }
@@ -38,7 +54,11 @@ const createOrUpdateCustomer = async (payload: ICustomer, userId: string): Promi
     if (gender && ['male', 'female', 'other'].includes(gender)) {
       existingCustomer.gender = gender as 'male' | 'female' | 'other';
     }
-    existingCustomer.profileImage = profileImage || existingCustomer.profileImage;
+
+    if (payload.profileImage) {
+      existingCustomer.profileImage = payload.profileImage;
+    }
+
     if (addressId) {
       existingCustomer.address = addressId;
     }
@@ -50,28 +70,37 @@ const createOrUpdateCustomer = async (payload: ICustomer, userId: string): Promi
     const newCustomer = await Customer.create({
       user: userId,
       gender,
-      profileImage,
+      profileImage: payload.profileImage,
       address: addressId,
     });
 
     return newCustomer;
   }
 };
-
 export const updateCustomer = async (
   id: string,
-  payload: Partial<ICustomer>
+  payload: Partial<ICustomer>,
+  file?: any
 ): Promise<ICustomer> => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new AppError('Invalid customer ID', httpStatus.BAD_REQUEST);
   }
 
-  let addressId;
+  const userId = payload.user;
 
-  // Check and create/update address if needed
+  // ✅ 1. Upload image if file exists
+  if (file) {
+    console.log('[11] Starting file upload...');
+    const imageName = `${userId}_${Date.now()}`; // added timestamp to ensure unique
+    const { secure_url } = await sendImageToCloudinary(imageName, file.path);
+    console.log('[13] File uploaded successfully:', secure_url);
+    payload.profileImage = secure_url;
+  }
+
+  // ✅ 2. Handle address creation or linking
+  let addressId;
   if (payload.address) {
-    if (typeof payload.address === 'object' ) {
-      // Create new address from object
+    if (typeof payload.address === 'object' && !mongoose.Types.ObjectId.isValid(payload.address as any)) {
       const newAddress = await ShippingAddressModel.create(payload.address);
       addressId = newAddress._id;
     } else {
@@ -79,17 +108,20 @@ export const updateCustomer = async (
     }
   }
 
-  // Prepare update data
+  // ✅ 3. Prepare update object
   const updateData: any = { ...payload };
   if (addressId) {
     updateData.address = addressId;
   }
 
+  // ✅ 4. Update customer document
   const updatedCustomer = await Customer.findByIdAndUpdate(
     id,
     { $set: updateData },
     { new: true, runValidators: true }
-  ).populate('user', 'name email phone').populate('address');
+  )
+    .populate('user', 'name email phone')
+    .populate('address');
 
   if (!updatedCustomer) {
     throw new AppError('Customer not found', httpStatus.NOT_FOUND);
@@ -97,14 +129,16 @@ export const updateCustomer = async (
 
   return updatedCustomer;
 };
-const getSingleCustomer = async (id: string) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError('Invalid customer ID', httpStatus.BAD_REQUEST);
-  }
 
-  const customer = await Customer.findById(id)
+
+export const getSingleCustomerByUserId = async (userId: string) => {
+
+  const customer = await Customer.findOne({ user: userId })
+
     .populate('user', 'name email phone')
     .populate('address');
+
+  console.log('Customer found:', customer);
 
   if (!customer) {
     throw new AppError('Customer not found', httpStatus.NOT_FOUND);
@@ -114,13 +148,9 @@ const getSingleCustomer = async (id: string) => {
 };
 
 
-
 export const CustomerServices = {
   createOrUpdateCustomer,
   updateCustomer,
-  getSingleCustomer,
+  getSingleCustomerByUserId
 };
 
-function isValidObjectId(address: mongoose.Types.ObjectId) {
-  throw new Error('Function not implemented.');
-}
