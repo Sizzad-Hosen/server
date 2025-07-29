@@ -49,10 +49,8 @@ export const getProductByIdController = catchAsync(
 );
 
 export const getAllProductsController = catchAsync(
-
   async (req: Request, res: Response) => {
-
-    const query = req.query; 
+    const query = req.query;
 
     const result = await ProductServices.getAllProducts(query);
 
@@ -60,12 +58,14 @@ export const getAllProductsController = catchAsync(
       statusCode: httpStatus.OK,
       success: true,
       message: "Products retrieved successfully",
-      data: result,
+     
+      data:{
+         data:result.data,
+         meta:result.meta
+        }
     });
   }
 );
-
-
 
 export const updateProductController = catchAsync(
   async (req: Request, res: Response) => {

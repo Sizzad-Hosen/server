@@ -1,22 +1,28 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model } from "mongoose";
 import { TPayment } from "./payment.interface";
 
 const paymentSchema = new Schema<TPayment>(
   {
+    orderId: { type: Schema.Types.ObjectId, ref: "Order", required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    orderId: { type: Schema.Types.ObjectId, ref: "Order" },
     amount: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["pending", "paid", "failed"],
-      default: "pending",
-    },
-    paymentMethod: {
-      type: String,
-      enum: ["bkash", "nagad", "sslcommerz", "cash_on_delivery"],
+      enum: ["pending", "success", "failed"],
       required: true,
     },
-    transactionId: { type: String },
+
+  method: {
+  type: String,
+  enum: ["cash_on_delivery", "sslcommerz"], 
+  required: true,
+},
+
+    transactionId: {
+      type: String,
+      unique: true,
+      sparse: true, // only required for sslcommerz
+    },
     paidAt: { type: Date },
   },
   {

@@ -3,7 +3,7 @@ import { sendImageToCloudinary } from "../../app/utils/sendImageToCloudinary";
 import { Category } from "../Category/category.model";
 import { Service } from "../Services/service.model";
 import { SubCategory } from "../SubCategory/subcategory.model";
-import { productSearchableField } from "./product.constance";
+import { IGenericResponse, productSearchableField } from "./product.constance";
 import { IProduct } from "./product.interface";
 import Product from "./product.model";
 
@@ -58,28 +58,55 @@ export const createProduct = async (payload: IProduct, files?:any) => {
   return product;
 };
 
-const getAllProducts = async(query: any)=>{
-    const productQuery = new QueryBuilder(Product.find(),query)
-    .search(productSearchableField)
-    .sort()
-    .filter()
-    .paginate()
-    .fields()
-    await productQuery.countTotal();
+const numericFields = ['quantity', 'price'];
 
+const getAllProducts = async (
+  filters: Record<string, unknown>
+): Promise<IGenericResponse<IProduct[]>> => {
+  // Create a shallow copy to avoid mutating the original filters
+  const sanitizedFilters = { ...filters };
 
-    const products = await productQuery.modelQuery;
-
-    return {
-        data:products,
-        meta:{
-            total:productQuery.total,
-            page:productQuery.page,
-            limit:productQuery.limit,
-            totalPages:productQuery.totalPages
+  // Sanitize numeric fields: convert valid numeric strings to numbers, remove invalid
+  numericFields.forEach(field => {
+    if (sanitizedFilters[field] !== undefined) {
+      const value = sanitizedFilters[field];
+      if (typeof value === 'string') {
+        const parsed = Number(value);
+        if (!isNaN(parsed)) {
+          sanitizedFilters[field] = parsed;
+        } else {
+          // Invalid numeric filter - remove it or handle error
+          delete sanitizedFilters[field];
+          // or throw an error, depending on your app logic
         }
+      }
     }
-}
+  });
+
+  const queryBuilder = new QueryBuilder<IProduct>(
+    Product.find(),
+    sanitizedFilters
+  );
+
+  queryBuilder.search(productSearchableField);
+  queryBuilder.filter();
+  queryBuilder.sort();
+  queryBuilder.paginate();
+  queryBuilder.fields();
+  await queryBuilder.countTotal();
+
+  const data = await queryBuilder.modelQuery;
+  return {
+    meta: {
+      page: queryBuilder.page,
+      limit: queryBuilder.limit,
+      total: queryBuilder.total,
+      totalPages: queryBuilder.totalPages,
+    },
+    data,
+  };
+};
+
 const updateProduct = async (id: string, payload: Partial<any>) => {
   const updatedProduct = await Product.findByIdAndUpdate(id, payload, {
     new: true,

@@ -1,34 +1,49 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model } from "mongoose";
 import { TOrder } from "./order.interface";
 
 const orderSchema = new Schema<TOrder>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    items: [
-      {
-        productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
-        quantity: { type: Number, required: true },
-        price: { type: Number, required: true },
-      },
-    ],
-    totalQuantity: { type: Number, required: true },
-    totalPrice: { type: Number, required: true },
-    invoiceNumber: { type: Number, required: true, unique: true },
-    shippingAddressId: {
+    user: {
       type: Schema.Types.ObjectId,
-      ref: "ShippingAddress",
+      ref: "User",
       required: true,
     },
-    paymentId: { type: Schema.Types.ObjectId, ref: "Payment" },
+    cart: {
+      type: Schema.Types.ObjectId,
+      ref: "Cart",
+      required: true,
+    },
+    invoiceNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    totalPrice: {
+      type: Number,
+      required: true,
+    },
+    orderStatus: {
+      type: String,
+      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
+      default: "pending",
+    },
     paymentMethod: {
       type: String,
-      enum: ["bkash", "nagad", "sslcommerz", "cash_on_delivery"],
+      enum: ["cash_on_delivery", "sslcommerz"],
       required: true,
     },
-    status: {
+    paymentStatus: {
       type: String,
-      enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
+      enum: ["pending", "success", "failed"],
       default: "pending",
+    },
+    shippingAddress: {
+      fullName: { type: String, required: true },
+      phone: { type: String, required: true },
+      address: { type: String, required: true },
+      city: { type: String, required: true },
+      postalCode: { type: String, required: true },
+      country: { type: String, required: true },
     },
   },
   {
