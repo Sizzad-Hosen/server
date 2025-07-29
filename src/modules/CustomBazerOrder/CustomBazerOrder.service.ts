@@ -51,15 +51,15 @@ export const createOrderService = async (userId: string, payload: Omit<TCustomBa
 };
 
 export const getOrdersService = async () => {
-  return await CustomBazerOrderModel.find()
-    .populate('user')
-    .populate('orderItems.customBazerProduct'); // make sure schema field is 'product'
+return await CustomBazerOrderModel.find()
+.populate('user')
+.populate('orderItems.product'); // ✅ correct path
 };
 
 export const getSingleOrderService = async (id: string) => {
-  return await CustomBazerOrderModel.findById(id)
-    .populate('user')
-    .populate('orderItems.customBazerProduct');
+return await CustomBazerOrderModel.findById(id)
+.populate('user')
+.populate('orderItems.product'); // ✅ correct path
 };
 
 export const CustomBazerOrderServices = {
