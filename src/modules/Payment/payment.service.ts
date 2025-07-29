@@ -1,15 +1,12 @@
-// src/modules/Payment/payment.service.ts
 
+// ============================== Payment Service ==============================
 import { PaymentModel } from "./payment.model";
-import { TPayment } from "./payment.interface";
 import SSLCommerzPayment from "sslcommerz-lts";
 import { v4 as uuidv4 } from "uuid";
 import { OrderModel } from "../Orders/order.model";
 
 export const createCodPayment = async (orderId: string, userId: string) => {
-  
   const order = await OrderModel.findById(orderId);
-
   if (!order) throw new Error("Order not found");
 
   const codPayment = await PaymentModel.create({
@@ -31,13 +28,11 @@ export const createCodPayment = async (orderId: string, userId: string) => {
 };
 
 export const createSslPayment = async (orderId: string, userId: string) => {
-  const order = await OrderModel.findOne({
-    _id: orderId,
-    user: userId,
-    paymentStatus: "pending",
-  });
 
-  if (!order) throw new Error("Order not found");
+  const order = await OrderModel.findOne({ _id: orderId, user: userId, paymentStatus: "pending" }).populate("user");
+
+  console.log("order for sllcommerce", order)
+  if (!order) throw new Error("Order not found or already paid");
 
   const tran_id = uuidv4();
 
@@ -47,24 +42,36 @@ export const createSslPayment = async (orderId: string, userId: string) => {
     process.env.SSL_COMMERZ_MODE === "sandbox"
   );
 
+  console.log("sslcz",sslcz)
   const data = {
     total_amount: order.totalPrice,
     currency: "BDT",
     tran_id,
-    success_url: `${process.env.SERVER_URL}/api/payment/success/${tran_id}`,
-    fail_url: `${process.env.SERVER_URL}/api/payment/fail/${tran_id}`,
-    cancel_url: `${process.env.SERVER_URL}/api/payment/cancel/${tran_id}`,
-    ipn_url: `${process.env.SERVER_URL}/api/payment/ipn`,
+    success_url: `${process.env.SERVER_URL}/payments/success/${tran_id}`,
+    fail_url: `${process.env.SERVER_URL}/payments/fail/${tran_id}`,
+    cancel_url: `${process.env.SERVER_URL}/payments/cancel/${tran_id}`,
+    ipn_url: `${process.env.SERVER_URL}/payments/ipn`,
     product_name: "Order Products",
-    cus_name: "Customer",
-    cus_email: "customer@example.com",
-    cus_phone: "017XXXXXXXX",
-    shipping_method: "Courier",
+    product_category: "Ecommerce",
     product_profile: "general",
+    shipping_method: "Courier",
+    cus_name: order.shippingAddress.fullName || "Customer",
+    cus_email: order.user?.email || "customer@example.com",
+    cus_add1: order.shippingAddress.address,
+    cus_city: order.shippingAddress.city,
+    cus_postcode: order.shippingAddress.postalCode,
+    cus_country: order.shippingAddress.country || "Bangladesh",
+    cus_phone: order.shippingAddress.phone,
+    value_a: orderId,
+    value_b: userId,
   };
 
-  const response = await sslcz.init(data);
+console.log("data", data)
 
+  const response = await sslcz.init(data);
+  
+  console.log("response", response)
+  
   await PaymentModel.create({
     orderId: order._id,
     userId: order.user,
@@ -73,8 +80,11 @@ export const createSslPayment = async (orderId: string, userId: string) => {
     status: "pending",
     transactionId: tran_id,
   });
-
+  
+  console.log("gateway", response.GatewayPageURL)
+  
   return { GatewayPageURL: response.GatewayPageURL };
+  
 };
 
 export const confirmSslPayment = async (transactionData: any) => {
@@ -97,11 +107,8 @@ export const confirmSslPayment = async (transactionData: any) => {
   return payment;
 };
 
-const failSslPayment = async (tran_id: string) => {
-  await PaymentModel.findOneAndUpdate(
-    { transactionId: tran_id },
-    { status: "failed" }
-  );
+export const failSslPayment = async (tran_id: string) => {
+  await PaymentModel.findOneAndUpdate({ transactionId: tran_id }, { status: "failed" });
 };
 
 export const PaymentServices = {
