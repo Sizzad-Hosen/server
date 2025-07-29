@@ -1,15 +1,17 @@
 import { Types } from "mongoose";
 
-export interface TPayment {
+export type PaymentStatus = "pending" | "success" | "failed";
+
+export type PaymentMethod = "cash-on-delivery" | "sslcommerz";
+
+export type TPayment = {
+
+  orderId: Types.ObjectId;
   userId: Types.ObjectId;
-  orderId?: Types.ObjectId;
   amount: number;
-  status: "pending" | "paid" | "failed" | "cancelled";
-  paymentMethod: "bkash" | "nagad" | "sslcommerz" | "cash_on_delivery";
+  status: PaymentStatus;
+  method: PaymentMethod;
   transactionId?: string;
-  sslSessionKey?: string; // For SSLCommerz gateway session tracking
-  gatewayResponse?: any;  // You may type this strictly later
   paidAt?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+
+};

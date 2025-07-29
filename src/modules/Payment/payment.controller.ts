@@ -1,27 +1,83 @@
 import { Request, Response } from "express";
+import catchAsync from "../../app/utils/catchAsync";
+import sendResponse from "../../app/utils/sendResponse";
+import httpStatus from "http-status";
 import { PaymentServices } from "./payment.service";
+import { OrderModel } from "../Orders/order.model";
 
-export const createPaymentHandler = async (req: Request, res: Response) => {
-  try {
-    const payment = await PaymentServices.createPayment(req.body);
-    res.status(201).json({ success: true, data: payment });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Payment failed", error });
+
+const createPaymentHandler = catchAsync(async (req: Request, res: Response) => {
+  const { orderId } = req.body;
+
+  console.log("orderId", {orderId})
+
+  const userId = req?.user?.userId;
+
+  console.log("userId", userId)
+  
+  if (!orderId) {
+    return sendResponse(res, {
+      statusCode: httpStatus.BAD_REQUEST,
+      success: false,
+      message: "Missing orderId in request body.",
+      data: null,
+    });
   }
-};
 
-export const confirmPaymentHandler = async (req: Request, res: Response) => {
-  const { transactionId, status } = req.body;
-  try {
-    const updated = await PaymentServices.updatePaymentStatus(transactionId, status);
-    res.status(200).json({ success: true, data: updated });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Payment update failed", error });
+  // 1. Find the order first
+  const order = await OrderModel.findById(orderId);
+
+  if (!order) {
+    return sendResponse(res, {
+      statusCode: httpStatus.NOT_FOUND,
+      success: false,
+      message: "Order not found.",
+      data: null,
+    });
   }
+
+  // 2. Get payment method from the order
+  const method = order.paymentMethod?.toLowerCase();
+
+  // 3. Route based on method
+  if (method === "cash_on_delivery") {
+    const result = await PaymentServices.createCodPayment(orderId, userId);
+    return sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Cash on Delivery payment confirmed.",
+      data: result,
+    });
+  } else if (method === "sslcommerz") {
+    const result = await PaymentServices.createSslPayment(orderId, userId);
+    return sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Redirecting to SSLCommerz Gateway.",
+      data: result,
+    });
+  } else {
+    return sendResponse(res, {
+      statusCode: httpStatus.BAD_REQUEST,
+      success: false,
+      message: "Invalid payment method in order. Use 'cash_on_delivery' or 'sslcommerz'.",
+      data: null,
+    });
+  }
+});
+
+const sslPaymentSuccessHandler = catchAsync(async (req: Request, res: Response) => {
+  await PaymentServices.confirmSslPayment(req.body);
+  res.redirect(`${process.env.CLIENT_SUCCESS_URL}?tran_id=${req.body.tran_id}`);
+});
+
+const sslPaymentFailedHandler = catchAsync(async (req: Request, res: Response) => {
+  await PaymentServices.failSslPayment(req.params.tran_id);
+  res.redirect(`${process.env.CLIENT_FAILED_URL}`);
+});
+
+export const PaymentController = {
+  createPaymentHandler,
+  sslPaymentSuccessHandler,
+  sslPaymentFailedHandler,
 };
-
-
-export const PaymentControllers = {
-    createPaymentHandler,
-    confirmPaymentHandler
-}

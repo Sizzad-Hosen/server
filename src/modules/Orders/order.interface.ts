@@ -1,19 +1,23 @@
 import { Types } from "mongoose";
-import { TCartItem } from "../Cart/cart.interface";
-import { TShippingAddress } from "../Address/address.interface";
 
+export type TOrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+export type TPaymentMethod = "cash_on_delivery" | "sslcommerz";
+export type TPaymentStatus = "pending" | "success" | "failed";
 
-export interface TOrder {
-  userId: Types.ObjectId;
-  items: TCartItem[];
-  totalQuantity: number;
+export type TOrder = {
+  user: Types.ObjectId;
+  cart: Types.ObjectId;
+  invoiceNumber: string;
   totalPrice: number;
-  invoiceNumber: number;
-  shippingAddressId: Types.ObjectId;
-  shippingAddress?: TShippingAddress;
-  paymentId?: Types.ObjectId;
-  paymentMethod: "bkash" | "nagad" | "sslcommerz" | "cash_on_delivery";
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+  orderStatus?: TOrderStatus;
+  paymentMethod: TPaymentMethod;
+  paymentStatus?: TPaymentStatus;
+  shippingAddress: {
+    fullName: string;
+    phone: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+};
