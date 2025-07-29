@@ -10,6 +10,8 @@ import { CartRoutes } from '../../modules/Cart/cart.route';
 import { ShippingAddressRoutes } from '../../modules/Address/address.route';
 import { OrderRoutes } from '../../modules/Orders/order.route';
 import { PaymentRoutes } from '../../modules/Payment/payment.route';
+import { CustomBazerrouters } from '../../modules/CustomBazerProduct/CustomBazerProduct.route';
+
 
 const router = Router();
 
@@ -58,6 +60,10 @@ const moduleRoutes = [
   {
     path: '/payments',
     route: PaymentRoutes
+  },
+  {
+    path: '/customBazerProducts',
+    route: CustomBazerrouters
   },
 ];
 
