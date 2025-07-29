@@ -1,3 +1,5 @@
+
+// ============================== Payment Controller ==============================
 import { Request, Response } from "express";
 import catchAsync from "../../app/utils/catchAsync";
 import sendResponse from "../../app/utils/sendResponse";
@@ -5,28 +7,11 @@ import httpStatus from "http-status";
 import { PaymentServices } from "./payment.service";
 import { OrderModel } from "../Orders/order.model";
 
-
 const createPaymentHandler = catchAsync(async (req: Request, res: Response) => {
   const { orderId } = req.body;
-
-  console.log("orderId", {orderId})
-
   const userId = req?.user?.userId;
 
-  console.log("userId", userId)
-  
-  if (!orderId) {
-    return sendResponse(res, {
-      statusCode: httpStatus.BAD_REQUEST,
-      success: false,
-      message: "Missing orderId in request body.",
-      data: null,
-    });
-  }
-
-  // 1. Find the order first
   const order = await OrderModel.findById(orderId);
-
   if (!order) {
     return sendResponse(res, {
       statusCode: httpStatus.NOT_FOUND,
@@ -36,10 +21,8 @@ const createPaymentHandler = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
-  // 2. Get payment method from the order
   const method = order.paymentMethod?.toLowerCase();
 
-  // 3. Route based on method
   if (method === "cash_on_delivery") {
     const result = await PaymentServices.createCodPayment(orderId, userId);
     return sendResponse(res, {

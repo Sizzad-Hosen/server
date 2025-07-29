@@ -1,20 +1,17 @@
+
 import { Request, Response } from "express";
 import catchAsync from "../../app/utils/catchAsync";
 import sendResponse from "../../app/utils/sendResponse";
 import HttpStatus from "http-status";
 import { OrderServices } from "./order.service";
 
-export const createOrderHandler = catchAsync(async (req: Request, res: Response) => {
-  
-  const userId = req?.user?.userId;
-  
 
-  console.log("userId", userId)
+export const createOrderHandler = catchAsync(async (req: Request, res: Response) => {
+
+
+  const userId = req?.user?.userId;
 
   if (!userId) throw new Error("Unauthorized");
-
-  console.log("body", req.body);
-  
 
   const result = await OrderServices.createOrder(req.body, userId);
 
@@ -35,6 +32,5 @@ export const createOrderHandler = catchAsync(async (req: Request, res: Response)
   }
 });
 
-export const OrderControllers = {
-  createOrderHandler,
-};
+export const OrderControllers = { createOrderHandler };
+
