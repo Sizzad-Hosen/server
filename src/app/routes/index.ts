@@ -11,6 +11,7 @@ import { ShippingAddressRoutes } from '../../modules/Address/address.route';
 import { OrderRoutes } from '../../modules/Orders/order.route';
 import { PaymentRoutes } from '../../modules/Payment/payment.route';
 import { CustomBazerrouters } from '../../modules/CustomBazerProduct/CustomBazerProduct.route';
+import { CustomBazerOrderRoutes } from '../../modules/CustomBazerOrder/CustomBazerOrder.route';
 
 
 const router = Router();
@@ -64,6 +65,10 @@ const moduleRoutes = [
   {
     path: '/customBazerProducts',
     route: CustomBazerrouters
+  },
+  {
+    path: '/customBazerOrders',
+    route:CustomBazerOrderRoutes
   },
 ];
 
