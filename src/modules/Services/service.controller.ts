@@ -74,6 +74,20 @@ export const getServiceFullTreeController = catchAsync(async (req: Request, res:
   });
 });
 
+export const getSingelServiceController= catchAsync(async (req: Request, res: Response) => {
+
+  const { id } = req.params;
+
+  const data = await ServiceServices.getSingelService(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Singel Service  fetched successfully",
+    data: data,
+  });
+});
+
 
 
 export const ServiceControllers = {
@@ -81,6 +95,7 @@ export const ServiceControllers = {
     getAllServicesController,
     deleteServiceController,
     updateServiceController,
-    getServiceFullTreeController
+    getServiceFullTreeController,
+    getSingelServiceController
 
 }

@@ -62,10 +62,20 @@ const getServiceFullTree = async (serviceId: string) => {
   };
 };
 
+const getSingelService = async(id:string)=>{
+
+
+const service = await Service.findById(id);
+
+  return service;
+
+}
+
 export const ServiceServices = {
   createService,
   deleteService,
   updateService,
   getAllServices,
-  getServiceFullTree
+  getServiceFullTree,
+  getSingelService
 };
