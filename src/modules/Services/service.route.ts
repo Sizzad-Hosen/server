@@ -15,7 +15,10 @@ router.get('/', ServiceControllers.getAllServicesController);
 
 router.get('/:id/categories-subcategories-products', ServiceControllers.getServiceFullTreeController);
 
+
 router.put('/:id',ServiceControllers.updateServiceController);
+
+router.get('/:id',ServiceControllers.getSingelServiceController);
 
 
 router.delete('/:id', ServiceControllers.deleteServiceController);
