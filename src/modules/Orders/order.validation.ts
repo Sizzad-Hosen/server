@@ -22,6 +22,18 @@ export const createOrderSchema = z.object({
   }),
 });
 
+
+export const orderStatusSchema = z.object({
+  body:z.object({
+  status: z.enum(['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'], {
+    errorMap: () => ({ message: 'Invalid order status value' }),
+  }),
+  })
+
+});
+
+
 export const OrderValidationSchemas = {
   createOrderSchema,
+  orderStatusSchema
 };

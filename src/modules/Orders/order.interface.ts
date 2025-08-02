@@ -4,6 +4,7 @@ export type TOrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "
 export type TPaymentMethod = "cash_on_delivery" | "sslcommerz";
 export type TPaymentStatus = "pending" | "success" | "failed";
 
+
 export type TOrder = {
   user: Types.ObjectId;
   cart: Types.ObjectId;
