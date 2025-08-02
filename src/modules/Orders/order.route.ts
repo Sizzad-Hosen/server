@@ -12,4 +12,11 @@ router.post("/create-order",
     validateRequest(OrderValidationSchemas.createOrderSchema),
    OrderControllers.createOrderHandler);
 
+router.get('/track/:invoiceNumber', OrderControllers.trackOrder);
+
+router.patch('/update-status/:invoiceNumber', 
+  validateRequest(OrderValidationSchemas.orderStatusSchema),
+  
+  OrderControllers.updateOrderStatus);
+
 export const OrderRoutes = router;

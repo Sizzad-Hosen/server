@@ -17,6 +17,7 @@ const createOrder = async (orderData: TOrder, userId: string) => {
   if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
 
   const cart = await Cart.findOne({ userId }).populate("items.productId");
+
   if (!cart || !cart.items || cart.items.length === 0) {
     throw new AppError(httpStatus.BAD_REQUEST, "No items in cart");
   }
@@ -32,6 +33,7 @@ const createOrder = async (orderData: TOrder, userId: string) => {
   
 
   const order = new OrderModel({
+    
     user: userId,
     cart: cart._id,
     totalPrice,
@@ -40,6 +42,7 @@ const createOrder = async (orderData: TOrder, userId: string) => {
     shippingAddress: orderData.shippingAddress,
     orderStatus: "pending",
     paymentStatus: "pending",
+
   });
 
   const savedOrder = await order.save();
@@ -60,4 +63,24 @@ const createOrder = async (orderData: TOrder, userId: string) => {
   throw new AppError(httpStatus.BAD_REQUEST, "Unsupported payment method");
 };
 
-export const OrderServices = { createOrder };
+
+export const getOrderByInvoice = async (invoiceNumber: string) => {
+
+  return await OrderModel.findOne({ invoiceNumber }).populate('user');
+
+};
+
+
+const updateOrderStatus = async (invoiceNumber: string, status: string) => {
+  return await OrderModel.findOneAndUpdate(
+    { invoiceNumber },
+    { orderStatus: status },
+    { new: true }
+  );
+};
+export const OrderServices = { 
+  createOrder,
+  getOrderByInvoice,
+  updateOrderStatus
+
+ };
