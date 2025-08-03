@@ -305,9 +305,9 @@ Create a new service.
 {
   "name": "Food"
 }
+---
 
-
-### 10. GET ALL Service
+## 10. GET ALL Service
 **** GET *** `/services`
 ###Request Body example
 {
