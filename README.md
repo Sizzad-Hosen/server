@@ -35,135 +35,163 @@ SERVER_URL = http://localhost:8080/api/v1
 File Structure Server
 <img width="373" height="812" alt="image" src="https://github.com/user-attachments/assets/f045f74b-cbb0-4672-8a13-102d556abd73" />
 
-## Authentication
-Login user 
-##Endpoints
-###1. Login
-Login user  
-**POST** '/auth/login'
-**Request Body **
-```Json
-{
-"email":"string",
-"password":"string"
+# 📄 clickeibazer.com API Documentation
 
+A comprehensive documentation for the backend API endpoints used in the clickeibazer.com e-commerce platform.
+
+Base URL: `http://localhost:8080/api/v1`
+
+---
+
+## 🔒 Authentication
+
+### 1. Login
+
+**POST** `/auth/login`
+
+**Request Body:**
+
+```json
+{
+  "email": "string",
+  "password": "string"
 }
+```
+
 **Response:**
-- **200 OK:** Login successfully
-- **400 Bad Request:** Validation error or email/phone already taken or missing
-- **401 Unauthorized:** Invalid or missing authentication token
 
-**Example Request**
+* `200 OK`: Login successfully
+* `400 Bad Request`: Validation error or missing credentials
+* `401 Unauthorized`: Invalid authentication token
+
+**Example:**
+
+```json
 {
-    "email":"rafi@gmail.com",
-    "password":"666666"
+  "email": "rafi@gmail.com",
+  "password": "666666"
 }
+```
 
-###2.Refresh token
-***POST***  /auth/refresh-token
+---
+
+### 2. Refresh Token
+
+**POST** `/auth/refresh-token`
+
+**Request Body:**
+
 ```json
 {
   "token": "your_refresh_token_here"
 }
+```
+
+**Headers:**
+
+* `Authorization: Bearer <token>`
+
 **Response:**
-- **200 OK:**  Refresh Password  successfully
-- **400 Bad Request:** Validation error or email/phone already taken or missing
-- **401 Unauthorized:** Invalid or missing authentication token
 
+* `200 OK`: Token refreshed successfully
+* `400 Bad Request`: Validation error
+* `401 Unauthorized`: Invalid token
 
-***Example
-Token: Headers Autherrization `Bearer {token}`
+---
 
-###3.Forget-password
-***POST ***  /auth/forget-password
-``Request Body json data example
+### 3. Forget Password
+
+**POST** `/auth/forget-password`
+
+**Request Body:**
+
+```json
 {
   "email": "sizzadhosen@gmail.com"
 }
+```
+
 **Response:**
-- **200 OK:** Forget password successfully
-- **400 Bad Request:** Validation error or email/phone already taken or missing
-- **401 Unauthorized:** Invalid or missing authentication token
 
+* `200 OK`: Email sent successfully
+* `400 Bad Request`: Validation error
+* `401 Unauthorized`: Invalid or missing token
 
-###4.Reset-password
-***POST ***  /auth/reset-password
-***Request Body json data example***
+---
+
+### 4. Reset Password
+
+**POST** `/auth/reset-password`
+
+**Request Body:**
+
+```json
 {
   "email": "rafi@gmail.com",
   "newPassword": "666666",
   "oldPassword": "123456"
 }
-Token: Headers Autherrization `Bearer {token}`
+```
+
+**Headers:**
+
+* `Authorization: Bearer <token>`
 
 **Response:**
-- **200 OK:** Reset password successfully
-- **400 Bad Request:** Validation error or email/phone already taken or missing
-- **401 Unauthorized:** Invalid or missing authentication token
 
-
-                    ###Registration user #####
-
-
-## 5. Registration User
-***POST *** users/register-user
-***Request Body***
-{
-"name": "Sizzad Hosen",
- "email": "rafi@gmail.com",
-"password": "123456",
-"phone": "01708694445"
-}
-Token: Headers Authorization `Bearer {token}`
-**Response:**
-- **200 OK:** registration successfully
-- **400 Bad Request:** Validation error or email/phone already taken or missing
-- **401 Unauthorized:** Invalid or missing authentication token
-
-### GET All Users
-***GET  *** /users
- 
-**Description:**
-Fetches a paginated list of all registered users (customers, admins, etc.).
+* `200 OK`: Password reset successfully
+* `400 Bad Request`: Validation error
+* `401 Unauthorized`: Invalid token
 
 ---
-#### Admin Token Only
-Token: Headers Autherrization `Bearer {token}`
+
+## 👥 User Management
+
+### 5. Register User
+
+**POST** `/users/register-user`
+
+**Request Body:**
+
+```json
+{
+  "name": "Sizzad Hosen",
+  "email": "rafi@gmail.com",
+  "password": "123456",
+  "phone": "01708694445"
+}
+```
+
+**Headers:**
+
+* `Authorization: Bearer <token>`
 
 **Response:**
 
-- `200 OK` – Users fetched successfully.
+* `200 OK`: Registration successful
+* `400 Bad Request`: Validation error
+* `401 Unauthorized`: Missing/invalid token
 
-**Sample Success Response:**
+---
+
+### GET All Users
+
+**GET** `/users`
+
+**Description:** Fetches a paginated list of all registered users.
+
+**Headers:**
+
+* `Authorization: Bearer <admin_token>`
+
+**Response:**
 
 ```json
 {
   "success": true,
   "message": "Successfully created new user",
   "data": {
-    "data": [
-      {
-        "_id": "6880bb3fae455d4810a0a34e",
-        "name": "rakib",
-        "email": "rakib@gmail.com",
-        "phone": "017869420",
-        "role": "customer",
-        "isActive": true,
-        "createdAt": "2025-07-23T10:36:47.086Z",
-        "updatedAt": "2025-07-23T10:36:47.086Z"
-      },
-      {
-        "_id": "6880b5eaae455d4810a0a34c",
-        "name": "Md. Sizzad Hosen",
-        "email": "sizzad50@gmail.com",
-        "phone": "01708694445",
-        "role": "customer",
-        "isActive": true,
-        "createdAt": "2025-07-23T10:14:02.622Z",
-        "updatedAt": "2025-07-23T10:14:02.622Z"
-      },
-      ...
-    ],
+    "data": [...],
     "meta": {
       "total": 8,
       "page": 1,
@@ -172,19 +200,25 @@ Token: Headers Autherrization `Bearer {token}`
     }
   }
 }
+```
 
-**Response:**
-- **200 OK:** Forget password successfully
-- **400 Bad Request:** Validation error or email/phone already taken or missing
-- **401 Unauthorized:** Invalid or missing authentication token
+---
 
+## 👨‍🏠 Customer Management
 
-### 6.Customer Create ###
+### 6. Create Customer
 
-###Create Customer
-***POST *** /customers/create-customer
+**POST** `/customers/create-customer`
 
-###Request Body json data example
+**Headers:**
+
+* `Authorization: Bearer <token>`
+
+**Content-Type:** `multipart/form-data`
+
+**Form Data:**
+
+```json
 {
   "division": "Dhaka",
   "district": "Gazipur",
@@ -192,81 +226,85 @@ Token: Headers Autherrization `Bearer {token}`
   "phoneNumber": "01712345678",
   "location": "Shib Bari",
   "messOrBasaName": "Green Mess",
-  "paraName": "South Para"
+  "paraName": "South Para",
+  "profileImage": "<file>"
 }
-
-Token: Headers Autherrization `Bearer {token}`
+```
 
 **Response:**
-- **200 OK:** {
-  "success": true,
-  "message": "Customer create successfully",
-  "data": {
-    "_id": "686c19acc7e78acebb35641a",
-    "gender": "male",
-    "profileImage": "https://res.cloudinary.com/xyz/image/upload/vxyz/updated-avatar.jpg",
-    "address": { ... }
-  }
-}
 
-- **400 Bad Request:** Validation error or email/phone already taken or missing
-- **401 Unauthorized:** Invalid or missing authentication token
+* `200 OK`: Customer created successfully
+* `400 Bad Request`: Validation error
+* `401 Unauthorized`: Invalid token
 
-### 7. update Customer
-***POST *** /customers/create-customer
+---
 
-### Request Body json data example
+### 7. Update Customer
+
+**PATCH** `/customers/:customerId`
+
+**Headers:**
+
+* `Authorization: Bearer <token>`
+
+**Content-Type:** `multipart/form-data`
+
+**Form Data:** (Same as Create Customer)
+
+**Response:**
+
+* `200 OK`: Customer updated successfully
+* `400 Bad Request`: Validation error
+* `401 Unauthorized`: Invalid token
+
+---
+
+### 8. Get Customer Details
+
+**GET** `/customers/customerDetails`
+
+**Headers:**
+
+* `Authorization: Bearer <token>`
+
+**Response:**
+
+* `200 OK`: Customer details fetched successfully
+* `400 Bad Request`: Validation error
+* `401 Unauthorized`: Invalid token
+
+---
+
+## 📅 Summary
+
+* Make sure all requests requiring authentication include the `Authorization` header.
+* All endpoints follow standard RESTful practices.
+* Cloudinary is used for image uploads in `multipart/form-data` format.
+
+---
+
+## ✉️ Contact & Support
+
+For questions or support, please contact the developer team at `support@clickeibazer.com`.
+
+# 📦 Service API Endpoints Documentation
+
+This section documents all the API endpoints related to **Services** in your platform.
+
+---
+
+## 9. Create Service
+
+**POST** `/services/create-service`
+
+Create a new service.
+
+**Request Body:**
+
+```json
 {
-  "division": "Dhaka",
-  "district": "Gazipur",
-  "postalCode": "1700",
-  "phoneNumber": "01712345678",
-  "location": "Shib Bari",
-  "messOrBasaName": "Green Mess",
-  "paraName": "South Para"
+  "name": "Food"
 }
-
-Token: Headers Autherrization `Bearer {token}`
-
-**Response:**
-- **200 OK:** {
-  "success": true,
-  "message": "Customer create successfully",
-  "data": {
-    "_id": "686c19acc7e78acebb35641a",
-    "gender": "male",
-    "profileImage": "https://res.cloudinary.com/xyz/image/upload/vxyz/updated-avatar.jpg",
-    "address": { ... }
-  }
-}
-
-- **400 Bad Request:** Validation error or email/phone already taken or missing
-- **401 Unauthorized:** Invalid or missing authentication token
-
-### 8. Customer Details
-****GET *** `/customers/customerDetails`
-###Request Body
-user Token: Headers Autherrization `Bearer {token}`
-
-**Response:**
-- **200 OK:** Customer Details Fetched successfully
-- **400 Bad Request:** Validation error or email/phone already taken or missing
-- **401 Unauthorized:** Invalid or missing authentication token
-
-###   Create Service   #### 
-
-### 9.create-service
-**** POST *** `/services/create-service`
-###Request Body example
-{
-    "name":"Food"
-}
-admin Token: Headers Autherrization `Bearer {token}`
-
-**Response:**
-- **200 OK:** Create Service successfully
-- **400 Bad Request:** Validation error or email/phone already taken or missing
-- **401 Unauthorized:** Invalid or missing authentication token
 
 
 ### 10. GET ALL Service
