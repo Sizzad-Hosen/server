@@ -5,11 +5,13 @@ import  express, { NextFunction, Request, Response }  from "express";
 import { ProductControllers } from "./product.controller";
 import { ProductsValidationSchemas } from "./product.validation";
 import { upload } from "../../app/utils/sendImageToCloudinary";
+import auth from "../../app/middlewares/auth";
 
 const router = express.Router();
 
 
 router.post('/create-product',
+  auth("admin"),
 
        upload.array('file'),
   (req: Request, res: Response, next: NextFunction) => {
@@ -20,11 +22,13 @@ router.post('/create-product',
     validateRequest(ProductsValidationSchemas.createProductSchema),
 ProductControllers.createProductController)
 
-router.get('/',ProductControllers.getAllProductsController)
+router.get('/',auth("admin","customer"),ProductControllers.getAllProductsController)
 
-router.get('/:id',ProductControllers.getProductByIdController)
-router.put('/:id',ProductControllers.updateProductController)
-router.delete('/:id',ProductControllers.deleteProductController)
+router.get('/:id',auth("admin","customer"),ProductControllers.getProductByIdController)
+
+router.put('/:id',auth("admin"),ProductControllers.updateProductController)
+
+router.delete('/:id',auth("admin"),ProductControllers.deleteProductController)
 
 export const ProductRoutes = router;
 

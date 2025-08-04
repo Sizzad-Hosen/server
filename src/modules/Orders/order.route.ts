@@ -8,13 +8,14 @@ const router = express.Router();
 
 
 router.post("/create-order",
-      auth(),
+     auth("admin","customer"),
     validateRequest(OrderValidationSchemas.createOrderSchema),
    OrderControllers.createOrderHandler);
 
-router.get('/track/:invoiceNumber', OrderControllers.trackOrder);
+router.get('/track/:invoiceNumber',auth("admin","customer"), OrderControllers.trackOrder);
 
 router.patch('/update-status/:invoiceNumber', 
+  auth("admin"),
   validateRequest(OrderValidationSchemas.orderStatusSchema),
   
   OrderControllers.updateOrderStatus);
