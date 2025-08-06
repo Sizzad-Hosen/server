@@ -2,16 +2,26 @@
 import { Types } from 'mongoose';
 
 export interface TCustomBazerOrderItem {
-  product: Types.ObjectId; 
-  quantity: number;
-  totalPrice: number; 
+  product: Types.ObjectId;          // Ref to main product (e.g., Fruits)
+  subcategoryName: string;          // e.g., "Apple" - must be in product.subcategories[]
+  quantity: number;                 // e.g., 2 kg or 10 pieces
+  unit: 'kg' | 'gm' | 'piece' | 'litre'; // match the subcategory unit
+  pricePerUnit: number;            // From subcategory
+  totalPrice: number;              // quantity * pricePerUnit
 }
 
 export interface TCustomBazerOrder {
-  user: Types.ObjectId; // Reference to User model
+  user: Types.ObjectId;
   orderItems: TCustomBazerOrderItem[];
-  totalAmount: number; // sum of all item totalPrice
+  totalAmount: number;
   status: 'pending' | 'confirmed' | 'delivered';
+  paymentMethod: 'sslcommerz' | 'cash_on_delivery';
+  address: {
+    fullName: string;
+    phoneNumber: string;
+    fullAddress: string;
+  };
+  siteNote?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

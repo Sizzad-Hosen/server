@@ -1,51 +1,83 @@
-// models/order.model.ts
-import { Schema, model } from 'mongoose';
-import { TCustomBazerOrder } from './CustomBazerOrder.interface';
+import { Schema, model, models, Types } from 'mongoose';
 
-
-const orderItemSchema = new Schema(
-  {
-    product: {
-      type: Schema.Types.ObjectId,
-      ref: 'CustomBazerProduct',
-      required: true,
-    },
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
-    totalPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+const customBazarOrderItemSchema = new Schema({
+  product: {
+    type: Types.ObjectId,
+    ref: 'CustomBazarProduct',
+    required: true,
   },
-  { _id: false }
-);
+  subcategoryName: {
+    type: String,
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  unit: {
+    type: String,
+    enum: ['kg', 'gm', 'piece', 'litre'],
+    required: true,
+  },
+  pricePerUnit: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  totalPrice: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+});
 
-const customBazerOrderSchema = new Schema<TCustomBazerOrder>(
+const customBazarOrderSchema = new Schema(
   {
     user: {
-      type: Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: 'User',
       required: true,
     },
     orderItems: {
-      type: [orderItemSchema],
+      type: [customBazarOrderItemSchema],
       required: true,
+      validate: {
+        validator: (value: any[]) => value.length > 0,
+        message: 'Order must contain at least one item.',
+      },
     },
     totalAmount: {
       type: Number,
       required: true,
+      min: 0,
     },
     status: {
       type: String,
       enum: ['pending', 'confirmed', 'delivered'],
       default: 'pending',
     },
+    paymentMethod: {
+      type: String,
+      enum: ['sslcommerz', 'cash_on_delivery'],
+      required: true,
+    },
+    address: {
+      fullName: { type: String, required: true },
+      phoneNumber: { type: String, required: true },
+      fullAddress: { type: String, required: true },
+    },
+    siteNote: {
+      type: String,
+      default: '',
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-export const CustomBazerOrderModel = model<TCustomBazerOrder>('CustomBazerOrder', customBazerOrderSchema );
+const CustomBazarOrder =
+  models.CustomBazarOrder || model('CustomBazarOrder', customBazarOrderSchema);
+
+export default CustomBazarOrder;

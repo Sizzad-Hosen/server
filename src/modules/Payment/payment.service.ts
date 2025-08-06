@@ -44,6 +44,7 @@ console.log("Basic order:", order)
 
   console.log("order", order)
 
+  
 
   if (!order) throw new Error("Order not found or already paid");
 
@@ -57,7 +58,10 @@ console.log("Basic order:", order)
   const isSandbox = (process.env.SSL_COMMERZ_MODE || '').toLowerCase() === 'sandbox';
 
   // Initialize SSLCommerz with environment variables
-const sslcz = new SSLCommerzPayment('testbox&', 'qwerty&', false);
+const sslcz = new SSLCommerzPayment('restr688873c004cb8', 'restr688873c004cb8@ssl', false);
+
+
+console.log("zzlz", sslcz)
 
 
   // Validate frontend and backend URLs
