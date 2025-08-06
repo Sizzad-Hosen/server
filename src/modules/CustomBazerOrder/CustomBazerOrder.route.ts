@@ -17,4 +17,6 @@ router.get('/', CustomBazerOrderControllers.getOrdersController);
 
 router.get('/:id', CustomBazerOrderControllers.getSingleOrderController);
 
+router.patch('/status/:invoiceId', CustomBazerOrderControllers.updateOrderStatusController);
+
 export const CustomBazerOrderRoutes = router;

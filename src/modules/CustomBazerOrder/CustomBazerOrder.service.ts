@@ -9,14 +9,16 @@ import CustomBazarOrder from './CustomBazerOrder.model';
 import QueryBuilder from '../../app/builder/QueryBuilder';
 import { customBazarGenerateInvoiceId, customBazarSearchableField } from './CustomBazerOrder.constance';
 
-
-
 export const createOrderService = async (
   userId: string,
   payload: Omit<TCustomBazerOrder, 'user' | 'totalAmount' | 'invoiceId'>
 ) => {
+
   // Find user
   const user = await User.findById(userId);
+
+  console.log("user", user)
+
   if (!user) {
     throw new Error('User not found !!');
   }
@@ -56,7 +58,7 @@ export const createOrderService = async (
   // Optional: Ensure unique invoiceId by checking DB, simple example with retry:
   const maxRetries = 5;
   let retryCount = 0;
-  
+
   while (retryCount < maxRetries) {
     const existing = await CustomBazarOrder.findOne({ invoiceId });
     if (!existing) break; // unique found
@@ -80,36 +82,38 @@ export const createOrderService = async (
   return createdOrder;
 };
 
-
 export const getOrdersService = async (query: any) => {
-  const customBazarOrderQuery = new QueryBuilder(CustomBazarOrder.find(), query)
-    .search(customBazarSearchableField)
-    .sort()
-    .filter()
-    .paginate()
-    .fields();
+  try {
+    const customBazarOrderQuery = new QueryBuilder(CustomBazarOrder.find(), query)
+      .search(customBazarSearchableField)
+      .sort()
+      .filter()
+      .paginate()
+      .fields();
 
-  // Apply populate on the underlying Mongoose Query instance
-  customBazarOrderQuery.modelQuery = customBazarOrderQuery.modelQuery
-    .populate('user')
-    .populate('orderItems.product');
+    customBazarOrderQuery.modelQuery = customBazarOrderQuery.modelQuery
+      .populate('user')
+      .populate('orderItems.product');
 
-  // Await total count for pagination metadata
-  await customBazarOrderQuery.countTotal();
+    await customBazarOrderQuery.countTotal();
 
-  // Execute the query and await the result
-  const customOrders = await customBazarOrderQuery.modelQuery.exec();
+    const customOrders = await customBazarOrderQuery.modelQuery.exec();
 
-  return {
-    data: customOrders,
-    meta: {
-      total: customBazarOrderQuery.total,
-      page: customBazarOrderQuery.page,
-      limit: customBazarOrderQuery.limit,
-      totalPages: customBazarOrderQuery.totalPages,
-    },
-  };
+    return {
+      data: customOrders,
+      meta: {
+        total: customBazarOrderQuery.total,
+        page: customBazarOrderQuery.page,
+        limit: customBazarOrderQuery.limit,
+        totalPages: customBazarOrderQuery.totalPages,
+      },
+    };
+  } catch (error) {
+    console.error('getOrdersService error:', error);
+    throw error; // Ensure the error is properly propagated
+  }
 };
+
 
 export const getSingleOrderService = async (id: string) => {
   return await CustomBazarOrder.findById(id)
@@ -119,8 +123,20 @@ export const getSingleOrderService = async (id: string) => {
 
 };
 
+
+const updateOrderStatus = async (invoiceId: string, status: string) => {
+
+  return await CustomBazarOrder.findOneAndUpdate(
+
+    { invoiceId },
+    { status },
+    { new: true }
+  );
+};
+
 export const CustomBazerOrderServices = {
   createOrderService,
   getOrdersService,
   getSingleOrderService,
+  updateOrderStatus
 };

@@ -13,7 +13,7 @@ const orderSchema = new Schema<TOrder>(
       ref: "Cart",
       required: true,
     },
-    invoiceNumber: {
+    invoiceId: {
       type: String,
       required: true,
       unique: true,
@@ -37,13 +37,11 @@ const orderSchema = new Schema<TOrder>(
       enum: ["pending", "success", "failed"],
       default: "pending",
     },
-    shippingAddress: {
+    address: {
       fullName: { type: String, required: true },
       phone: { type: String, required: true },
-      address: { type: String, required: true },
-      city: { type: String, required: true },
-      postalCode: { type: String, required: true },
-      country: { type: String, required: true },
+      fullAddress: { type: String, required: true },
+    
     },
   },
   {

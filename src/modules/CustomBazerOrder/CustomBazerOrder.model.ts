@@ -54,7 +54,8 @@ const customBazarOrderSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'confirmed', 'delivered'],
+     enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
+
       default: 'pending',
     },
     paymentMethod: {

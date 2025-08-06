@@ -19,13 +19,19 @@ data: result,
 
 
 export const getOrdersController = catchAsync(async (req: Request, res: Response) => {
+  console.log("query", req.query)
   const result = await CustomBazerOrderServices.getOrdersService(req.query);
+
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Orders retrieved successfully',
-    data: result,
+    data: {
+         data:result.data,
+         meta:result.meta
+    }
+
   });
 });
 
@@ -50,8 +56,27 @@ data: result,
 });
 });
 
+
+export const updateOrderStatusController = catchAsync(async (req: Request, res: Response) => {
+  
+  const { invoiceId } = req.params;
+
+  const { status } = req.body;
+
+  const updatedOrder = await CustomBazerOrderServices.updateOrderStatus(invoiceId, status);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Order status updated successfully',
+    data: updatedOrder,
+  });
+});
+
+
 export const CustomBazerOrderControllers = {
 createOrderController,
 getOrdersController,
 getSingleOrderController,
+updateOrderStatusController
 };

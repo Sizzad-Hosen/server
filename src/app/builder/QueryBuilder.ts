@@ -11,18 +11,27 @@ class QueryBuilder<T> {
   public totalPages: number = 1;
 
   constructor(modelQuery: Query<T[], T>, query: Record<string, unknown>) {
+    // Trim all string values in query
+    const sanitizedQuery: Record<string, unknown> = {};
+    for (const key in query) {
+      const val = query[key];
+      sanitizedQuery[key] =
+        typeof val === "string" ? val.trim() : val;
+    }
+
     this.modelQuery = modelQuery;
-    this.query = query;
+    this.query = sanitizedQuery;
   }
 
   search(searchableFields: string[]) {
-    const searchTerm = this.query?.searchTerm;
+    const searchTerm = this.query?.searchTerm as string;
     if (searchTerm) {
+      const trimmed = searchTerm.trim();
       this.modelQuery = this.modelQuery.find({
         $or: searchableFields.map(field => {
           const dbField = fieldToDbPathMap[field] || field;
           return {
-            [dbField]: { $regex: searchTerm, $options: 'i' },
+            [dbField]: { $regex: trimmed, $options: 'i' },
           };
         }),
       });
@@ -33,30 +42,31 @@ class QueryBuilder<T> {
   filter() {
     const queryObj = { ...this.query };
     const excludeFields = ["searchTerm", "sort", "limit", "page", "fields"];
-    excludeFields.forEach((el) => delete queryObj[el]);
+    excludeFields.forEach(el => delete queryObj[el]);
 
-    const numberFields = ["price", "quantity"]; // numeric fields here
-    const filterConditions: any = {};
+    const numberFields = ["price", "quantity"]; // add more as needed
+    const filterConditions: Record<string, any> = {};
 
     Object.entries(queryObj).forEach(([field, value]) => {
       const dbField = fieldToDbPathMap[field] || field;
 
       if (typeof value === "string") {
+        const trimmedValue = value.trim();
+
         if (numberFields.includes(field)) {
-          // Parse number for numeric fields
-          const parsedNum = Number(value);
+          const parsedNum = Number(trimmedValue);
           if (!isNaN(parsedNum)) {
             filterConditions[dbField] = parsedNum;
-          } else {
-            // Skip or handle invalid number input
-            // You could throw error here if needed
           }
         } else {
-          // String fields use regex for partial & case-insensitive match
-          filterConditions[dbField] = { $regex: value, $options: "i" };
+          // Use regex for partial string match
+          filterConditions[dbField] = {
+            $regex: trimmedValue,
+            $options: "i",
+          };
         }
       } else {
-        // For non-string (number, boolean), exact match
+        // Exact match for non-string types
         filterConditions[dbField] = value;
       }
     });
