@@ -35,6 +35,7 @@ export const createCustomBazerOrder = z.object({
     }),
 
     siteNote: z.string().optional(),
+    
   }),
 });
 

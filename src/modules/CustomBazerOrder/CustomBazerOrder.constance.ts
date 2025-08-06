@@ -1,0 +1,9 @@
+export const customBazarSearchableField = ["name", "email", "address.fullAddress","invoiceId"]
+
+
+
+
+export function customBazarGenerateInvoiceId(): string {
+  const randomNumber = Math.floor(100000 + Math.random() * 900000); 
+  return `CB-${randomNumber}`;
+}

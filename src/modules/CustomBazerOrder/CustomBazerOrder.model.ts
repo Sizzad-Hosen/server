@@ -3,7 +3,7 @@ import { Schema, model, models, Types } from 'mongoose';
 const customBazarOrderItemSchema = new Schema({
   product: {
     type: Types.ObjectId,
-    ref: 'CustomBazarProduct',
+    ref: 'CustomBazerProduct',
     required: true,
   },
   subcategoryName: {
@@ -67,6 +67,10 @@ const customBazarOrderSchema = new Schema(
       phoneNumber: { type: String, required: true },
       fullAddress: { type: String, required: true },
     },
+    invoiceId:{
+ type: String,
+ required: true,
+    },
     siteNote: {
       type: String,
       default: '',
@@ -77,7 +81,6 @@ const customBazarOrderSchema = new Schema(
   }
 );
 
-const CustomBazarOrder =
-  models.CustomBazarOrder || model('CustomBazarOrder', customBazarOrderSchema);
+const CustomBazarOrder = model('CustomBazarOrder', customBazarOrderSchema);
 
 export default CustomBazarOrder;

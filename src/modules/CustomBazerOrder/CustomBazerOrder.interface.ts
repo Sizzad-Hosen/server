@@ -21,6 +21,7 @@ export interface TCustomBazerOrder {
     phoneNumber: string;
     fullAddress: string;
   };
+  invoiceId:string;
   siteNote?: string;
   createdAt?: Date;
   updatedAt?: Date;

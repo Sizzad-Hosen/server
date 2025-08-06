@@ -17,15 +17,16 @@ data: result,
 });
 });
 
-export const getOrdersController = catchAsync(async (_req: Request, res: Response) => {
-const result = await CustomBazerOrderServices.getOrdersService();
 
-sendResponse(res, {
-statusCode: httpStatus.OK,
-success: true,
-message: 'Orders retrieved successfully',
-data: result,
-});
+export const getOrdersController = catchAsync(async (req: Request, res: Response) => {
+  const result = await CustomBazerOrderServices.getOrdersService(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Orders retrieved successfully',
+    data: result,
+  });
 });
 
 export const getSingleOrderController = catchAsync(async (req: Request, res: Response) => {
