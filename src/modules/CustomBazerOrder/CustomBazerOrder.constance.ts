@@ -1,5 +1,10 @@
-export const customBazarSearchableField = ["name", "email", "address.fullAddress","invoiceId"]
 
+export const customBazarSearchableField = [
+  'invoiceId', // root-level
+  'user.name', // populated
+  'user.email', // populated
+  'address.fullAddress', 
+];
 
 
 

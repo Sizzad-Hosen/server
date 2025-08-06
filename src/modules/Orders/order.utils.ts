@@ -1,25 +1,29 @@
 import { OrderModel } from "./order.model";
 
-export const generateInvoiceNumber = async (): Promise<number> => {
+export const generateInvoiceId = async (): Promise<string> => {
   const lastOrder = await OrderModel.findOne({}, {}, { sort: { createdAt: -1 } });
 
-  const lastInvoiceRaw = lastOrder?.invoiceNumber;
-  const lastInvoiceNumber = lastInvoiceRaw ? Number(lastInvoiceRaw) : 100000;
+  const lastInvoiceRaw = lastOrder?.invoiceId;
 
-  let nextInvoiceNumber = lastInvoiceNumber + 1;
+  // Extract number after "O", or start from 100000 if not found
+  const lastInvoiceId = lastInvoiceRaw ? parseInt(lastInvoiceRaw.slice(1)) : 100000;
 
-  // Retry if the invoice number already exists
-  let exists = await OrderModel.exists({ invoiceNumber: nextInvoiceNumber });
+  let nextInvoiceId = lastInvoiceId + 1;
+
+  // Retry if invoiceNumber exists
+  let exists = await OrderModel.exists({ invoiceId: `O${nextInvoiceId.toString().padStart(6, '0')}` });
 
   while (exists) {
-    nextInvoiceNumber++;
+    nextInvoiceId++;
 
-    if (nextInvoiceNumber.toString().length > 8) {
-      nextInvoiceNumber = 100000; // fallback/reset
+    // Reset if number exceeds 999999 (6 digits)
+    if (nextInvoiceId > 999999) {
+      nextInvoiceId = 100000; // fallback/reset
     }
 
-    exists = await OrderModel.exists({ invoiceNumber: nextInvoiceNumber });
+    exists = await OrderModel.exists({ invoiceId: `O${nextInvoiceId.toString().padStart(6, '0')}` });
   }
 
-  return nextInvoiceNumber;
+  // Return with "O" and zero-padded 6-digit number
+  return `O${nextInvoiceId.toString().padStart(6, '0')}`;
 };

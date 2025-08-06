@@ -35,6 +35,7 @@ export const createOrderHandler = catchAsync(async (req: Request, res: Response)
 
 
 export const trackOrder = catchAsync(async (req: Request, res: Response) => {
+  
   const { invoiceNumber } = req.params;
 
   if (!invoiceNumber) {
@@ -61,6 +62,23 @@ export const trackOrder = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+
+export const getOrdersController = catchAsync(async (req: Request, res: Response) => {
+  console.log("query", req.query)
+  const result = await OrderServices.getAllOrders(req.query);
+
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Orders retrieved successfully',
+    data: {
+         data:result.data,
+         meta:result.meta
+    }
+
+  });
+});
 
 
 export const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
@@ -91,5 +109,5 @@ export const updateOrderStatus = catchAsync(async (req: Request, res: Response) 
   });
 });
 
-export const OrderControllers = { createOrderHandler, trackOrder , updateOrderStatus};
+export const OrderControllers = { createOrderHandler, trackOrder , updateOrderStatus , getOrdersController};
 

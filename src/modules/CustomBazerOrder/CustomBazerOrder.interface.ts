@@ -14,7 +14,7 @@ export interface TCustomBazerOrder {
   user: Types.ObjectId;
   orderItems: TCustomBazerOrderItem[];
   totalAmount: number;
-  status: 'pending' | 'confirmed' | 'delivered';
+  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
   paymentMethod: 'sslcommerz' | 'cash_on_delivery';
   address: {
     fullName: string;

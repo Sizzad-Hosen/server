@@ -8,17 +8,15 @@ export type TPaymentStatus = "pending" | "success" | "failed";
 export type TOrder = {
   user: Types.ObjectId;
   cart: Types.ObjectId;
-  invoiceNumber: string;
+  invoiceId: string;
   totalPrice: number;
   orderStatus?: TOrderStatus;
   paymentMethod: TPaymentMethod;
   paymentStatus?: TPaymentStatus;
-  shippingAddress: {
+  address: {
     fullName: string;
     phone: string;
-    address: string;
-    city: string;
-    postalCode: string;
-    country: string;
+    fullAddress: string;
+
   };
 };
