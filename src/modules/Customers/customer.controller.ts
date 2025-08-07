@@ -4,6 +4,7 @@ import httpStatus from 'http-status';
 import catchAsync from '../../app/utils/catchAsync';
 import sendResponse from '../../app/utils/sendResponse';
 import { CustomerServices } from './customer.service';
+import AppError from '../../app/config/error/AppError';
 
 export const createCustomerController = catchAsync(
   async (req: Request, res: Response) => {
@@ -50,7 +51,15 @@ export const getSingleCustomerController = catchAsync(
 
   async (req: Request, res: Response) => {
 
-    const userId = req?.user?.userId;
+    const userId = req?.user?.userId
+    
+console.log("userId", userId)
+
+if (!userId) {
+  console.error('No userId found in req.user');
+
+  throw new AppError('Unauthorized access', httpStatus.UNAUTHORIZED);
+}
 
     console.log('Fetching customer with ID:', userId);
 

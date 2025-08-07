@@ -35,17 +35,17 @@ export const createOrderHandler = catchAsync(async (req: Request, res: Response)
 
 
 export const trackOrder = catchAsync(async (req: Request, res: Response) => {
-  
-  const { invoiceNumber } = req.params;
 
-  if (!invoiceNumber) {
+  const { invoiceId } = req.params;
+
+  if (!invoiceId) {
     return res.status(httpStatus.BAD_REQUEST).json({
       success: false,
       message: 'Invoice number is required',
     });
   }
 
-  const order = await OrderServices.getOrderByInvoice(invoiceNumber);
+  const order = await OrderServices.getOrderByInvoice(invoiceId);
 
   if (!order) {
     return res.status(httpStatus.NOT_FOUND).json({
@@ -64,25 +64,43 @@ export const trackOrder = catchAsync(async (req: Request, res: Response) => {
 
 
 export const getOrdersController = catchAsync(async (req: Request, res: Response) => {
-  console.log("query", req.query)
-  const result = await OrderServices.getAllOrders(req.query);
 
+
+  const role = (req as any).user?.role || 'user';
+
+
+  const userId = (req as any).user?.userId;
+
+  const result = await OrderServices.getAllOrders(req.query, role, userId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Orders retrieved successfully',
     data: {
-         data:result.data,
-         meta:result.meta
-    }
-
+      data: result.data,
+      meta: result.meta,
+    },
   });
 });
 
 
+export const getSingelOrder = catchAsync(async (req: Request, res: Response) => {
+
+  const { invoiceId} = req.params;
+  const updatedOrder = await OrderServices.getOrderByInvoice(invoiceId);
+
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Order  retried successfully',
+    data: updatedOrder,
+  });
+});
+
 export const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
-  const { invoiceNumber } = req.params;
+  const { invoiceId} = req.params;
   const { status } = req.body;
 
   if (!status) {
@@ -92,7 +110,7 @@ export const updateOrderStatus = catchAsync(async (req: Request, res: Response) 
     });
   }
 
-  const updatedOrder = await OrderServices.updateOrderStatus(invoiceNumber, status);
+  const updatedOrder = await OrderServices.updateOrderStatus(invoiceId, status);
 
   if (!updatedOrder) {
     return res.status(httpStatus.NOT_FOUND).json({
@@ -109,5 +127,82 @@ export const updateOrderStatus = catchAsync(async (req: Request, res: Response) 
   });
 });
 
-export const OrderControllers = { createOrderHandler, trackOrder , updateOrderStatus , getOrdersController};
+export const updateOrderPaymentStatus = catchAsync(async (req: Request, res: Response) => {
+
+  const { invoiceId } = req.params;
+
+  const { status } = req.body;
+
+  if (!status) {
+    return res.status(httpStatus.BAD_REQUEST).json({
+      success: false,
+      message: 'Order status is required',
+    });
+  }
+
+  const updatedOrder = await OrderServices.updateOrderStatus(invoiceId, status);
+
+  if (!updatedOrder) {
+    return res.status(httpStatus.NOT_FOUND).json({
+      success: false,
+      message: 'Order updated not found',
+    });
+  }
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Order Payment status updated successfully',
+    data: updatedOrder,
+  });
+});
+
+
+export const getAllOrdersByUserIdControllers = catchAsync(
+  async (req: Request, res: Response) => {
+
+    const userId = req.user?.userId;
+
+    console.log("userId", userId)
+
+    const orders = await OrderServices.getAllOrdersByUserId(userId);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Orders fetched successfully",
+      data: orders,
+    });
+  }
+);
+
+
+
+export const handleDeleteSingleOrder = catchAsync(async (req: Request, res: Response) => {
+
+ const id = req.params.id;
+console.log("deleted id", id)
+ 
+    const role = (req as any).user?.role || "user"; 
+
+    const deleted = await OrderServices.deleteSingleOrderById(id, role);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: role === "admin" ? "Order permanently deleted" : "Order removed from your history",
+      data: deleted,
+
+    });
+  })
+
+
+export const OrderControllers = { createOrderHandler,handleDeleteSingleOrder, getAllOrdersByUserIdControllers,getSingelOrder, trackOrder , updateOrderStatus , getOrdersController , updateOrderPaymentStatus};
 

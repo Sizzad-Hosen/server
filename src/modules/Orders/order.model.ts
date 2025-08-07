@@ -24,7 +24,7 @@ const orderSchema = new Schema<TOrder>(
     },
     orderStatus: {
       type: String,
-      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
+      enum: ["pending","processing", "confirmed", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
     paymentMethod: {
@@ -34,7 +34,7 @@ const orderSchema = new Schema<TOrder>(
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "success", "failed"],
+      enum: ["pending", "paid","success", "failed"],
       default: "pending",
     },
     address: {
@@ -42,6 +42,10 @@ const orderSchema = new Schema<TOrder>(
       phone: { type: String, required: true },
       fullAddress: { type: String, required: true },
     
+    },
+      deletedByUser: {
+      type: Boolean,
+      default: false,
     },
   },
   {

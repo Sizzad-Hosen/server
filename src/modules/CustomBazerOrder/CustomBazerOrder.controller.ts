@@ -17,25 +17,27 @@ data: result,
 });
 });
 
-
 export const getOrdersController = catchAsync(async (req: Request, res: Response) => {
-  console.log("query", req.query)
-  const result = await CustomBazerOrderServices.getOrdersService(req.query);
+  const role = (req as any).user?.role || 'user';     // From auth middleware
+  const userId = (req as any).user?.userId;              // From auth middleware
 
+  console.log("query", req.query);
+
+  const result = await CustomBazerOrderServices.getOrdersService(req.query, role, userId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Orders retrieved successfully',
     data: {
-         data:result.data,
-         meta:result.meta
-    }
-
+      data: result.data,
+      meta: result.meta,
+    },
   });
 });
 
 export const getSingleOrderController = catchAsync(async (req: Request, res: Response) => {
+
 const { id } = req.params;
 const result = await CustomBazerOrderServices.getSingleOrderService(id);
 
@@ -73,10 +75,55 @@ export const updateOrderStatusController = catchAsync(async (req: Request, res: 
   });
 });
 
+export const getAllCustomOrdersByUserIdControllers = catchAsync(
+  async (req: Request, res: Response) => {
+
+    const userId = req.user?.userId;
+
+    console.log("userId", userId)
+
+
+    const orders = await CustomBazerOrderServices.getAllCustomOrdersByUserId(userId);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Orders fetched successfully",
+      data: orders,
+    });
+  }
+);
+export const handleDeleteSingleOrder = catchAsync(
+  async (req: Request, res: Response) => {
+    const id = req.params.id;
+    console.log("Deleting order with id:", id);
+
+    const role = (req as any).user?.role || "user";
+
+    const deleted = await CustomBazerOrderServices.deleteSingleOrderById(id, role);
+
+    if (!deleted) {
+      console.log("Order not found for id:", id);
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: role === "admin" ? "Order permanently deleted" : "Order removed from your history",
+      data: deleted,
+    });
+  }
+);
 
 export const CustomBazerOrderControllers = {
 createOrderController,
 getOrdersController,
 getSingleOrderController,
-updateOrderStatusController
+updateOrderStatusController,
+getAllCustomOrdersByUserIdControllers,
+handleDeleteSingleOrder
 };

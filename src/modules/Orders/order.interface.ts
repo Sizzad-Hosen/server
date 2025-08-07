@@ -1,8 +1,9 @@
 import { Types } from "mongoose";
 
-export type TOrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+export type TOrderStatus = "pending" |"processing"| "confirmed" | "shipped" | "delivered" | "cancelled";
 export type TPaymentMethod = "cash_on_delivery" | "sslcommerz";
-export type TPaymentStatus = "pending" | "success" | "failed";
+
+export type TPaymentStatus = "pending" |"paid"| "success" | "failed";
 
 
 export type TOrder = {
@@ -19,4 +20,5 @@ export type TOrder = {
     fullAddress: string;
 
   };
+   deletedByUser?: boolean; 
 };

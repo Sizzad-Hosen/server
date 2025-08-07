@@ -23,6 +23,7 @@ export interface TCustomBazerOrder {
   };
   invoiceId:string;
   siteNote?: string;
+  deletedByUser?: boolean; 
   createdAt?: Date;
   updatedAt?: Date;
 }

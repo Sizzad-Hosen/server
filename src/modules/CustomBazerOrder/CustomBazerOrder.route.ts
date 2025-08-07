@@ -6,6 +6,10 @@ import auth from '../../app/middlewares/auth';
 
 const router = express.Router();
 
+router.get('/my-custom-orders', auth("admin","customer"), CustomBazerOrderControllers.getAllCustomOrdersByUserIdControllers);
+
+router.delete("/:id",auth(), CustomBazerOrderControllers.handleDeleteSingleOrder);
+
 router.post(
 '/create-customBazerOrder',
 auth(),
@@ -13,10 +17,13 @@ validateRequest(CustomBazerOrderValidationSchemas.createCustomBazerOrder),
 CustomBazerOrderControllers.createOrderController
 );
 
-router.get('/', CustomBazerOrderControllers.getOrdersController);
+router.get('/',auth("admin"), CustomBazerOrderControllers.getOrdersController);
 
 router.get('/:id', CustomBazerOrderControllers.getSingleOrderController);
 
-router.patch('/status/:invoiceId', CustomBazerOrderControllers.updateOrderStatusController);
+router.patch('/status/:invoiceId',
+      auth("admin"),
+    
+     CustomBazerOrderControllers.updateOrderStatusController);
 
 export const CustomBazerOrderRoutes = router;
