@@ -100,12 +100,34 @@ const getMe = catchAsync(async (req, res) => {
   });
 });
 
+export const changePasswordController = catchAsync(async (req, res) => {
+
+  const userId = req?.user?.userId;
+
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'All fields are required');
+  }
+
+  const result = await AuthServices.changePassword(userId, oldPassword, newPassword);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Password changed successfully',
+    data: result,
+  });
+
+  
+});
 
 export const AuthControllers ={
     loginUser,
     refreshToken,
     forgetPassword,
     resetPassword,
-    getMe
+    getMe,
+    changePasswordController
 
 }

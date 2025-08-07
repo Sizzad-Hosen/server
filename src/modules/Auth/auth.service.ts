@@ -19,7 +19,8 @@ const loginUser = async (payload: TLoginUser) => {
   const isPasswordMatched = await User.isPasswordMatched(password, user.password); 
 
 console.log("Login payload password:", password);
-console.log("Stored user password:", user.password); // should be hash
+console.log("Stored user password:", user.password);
+
 console.log("Password match result:", isPasswordMatched);
 
 
@@ -166,11 +167,35 @@ const getMe = async (token: string) => {
   return user;
 };
 
+export const changePassword = async (
+  userId: string,
+  oldPassword: string,
+  newPassword: string
+): Promise<any> => {
+  const user = await User.findById(userId).select('+password');
+  if (!user || !user.password) {
+    throw new Error('User not found or password missing');
+  }
+
+  const isMatch = await bcrypt.compare(oldPassword, user.password);
+  if (!isMatch) {
+    throw new Error('Old password is incorrect');
+  }
+
+  user.password = newPassword; // plain password - will be hashed in pre('save')
+  
+  await user.save();
+
+  return { message: 'Password changed successfully' };
+};
+
+
 export const AuthServices ={
     loginUser,
     refreshToken,
     forgetPassword,
     resetPassword,
-    getMe
+    getMe,
+    changePassword
 
 }
