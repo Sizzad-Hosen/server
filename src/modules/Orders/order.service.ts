@@ -66,18 +66,26 @@ const createOrder = async (orderData: TOrder, userId: string) => {
 };
 
 
-export const getOrderByInvoice = async (invoiceNumber: string) => {
+export const getOrderByInvoice = async (invoiceId: string) => {
 
-  return await OrderModel.findOne({ invoiceNumber }).populate('user');
+  return await OrderModel.findOne({ invoiceId }).populate('user');
 
 };
 
 
-export const getAllOrders = async (query: any) => {
-
+export const getAllOrders = async (query: any, role: string, userId?: string) => {
   try {
-    
-    const orderQuery = new QueryBuilder(OrderModel.find(), query)
+    let baseQuery = OrderModel.find();
+
+    // If user is not admin, filter orders by user and exclude soft-deleted
+    if (role !== 'admin') {
+      baseQuery = baseQuery.where({
+        user: userId,
+        deletedByUser: false,
+      });
+    }
+
+    const orderQuery = new QueryBuilder(baseQuery, query)
       .search(ordersSearchableField)
       .sort()
       .filter()
@@ -87,15 +95,14 @@ export const getAllOrders = async (query: any) => {
     orderQuery.modelQuery = orderQuery.modelQuery
       .populate('user')
       .populate('cart')
-      .populate('address')
-   
+      .populate('address');
 
     await orderQuery.countTotal();
 
-    const customOrders = await orderQuery.modelQuery.exec();
+    const orders = await orderQuery.modelQuery.exec();
 
     return {
-      data: customOrders,
+      data: orders,
       meta: {
         total: orderQuery.total,
         page: orderQuery.page,
@@ -104,24 +111,78 @@ export const getAllOrders = async (query: any) => {
       },
     };
   } catch (error) {
-    console.error('getOrdersService error:', error);
-    throw error; // Ensure the error is properly propagated
+    console.error('getAllOrders error:', error);
+    throw error;
   }
 };
 
 
-const updateOrderStatus = async (invoiceNumber: string, status: string) => {
+export const getAllOrdersByUserId = async (userId: string) => {
+  try {
+    
+    console.log("ser userId", userId)
+
+    const orders = await OrderModel.find({
+      user: userId,
+      deletedByUser: false, 
+    })
+      .populate("user")
+      .populate("cart");
+
+    console.log(orders);
+
+    return orders;
+  } catch (error) {
+    throw new Error("Failed to fetch orders for the user");
+  }
+};
+
+
+const updateOrderStatus = async (invoiceId: string, status: string) => {
   return await OrderModel.findOneAndUpdate(
-    { invoiceNumber },
+    { invoiceId },
     { orderStatus: status },
     { new: true }
   );
 };
 
+const updateOrderPaymentStatus = async (invoiceId: string, status: string) => {
+
+  return await OrderModel.findOneAndUpdate(
+
+    { invoiceId },
+
+    { paymentStatus:status },
+
+    { new: true }
+  );
+};
+
+export const deleteSingleOrderById = async (id: string, role:string) => {
+
+ if (role === "admin") {
+    // Hard delete
+    return await OrderModel.findByIdAndDelete(id);
+  } else {
+    // Soft delete (for regular users)
+    const order = await OrderModel.findById(id);
+    if (!order) return null;
+
+    order.deletedByUser = true;
+    await order.save();
+    return order;
+  }
+};
+
+
 export const OrderServices = { 
   createOrder,
   getOrderByInvoice,
   updateOrderStatus,
-  getAllOrders
+  getAllOrders,
+  updateOrderPaymentStatus,
+  getAllOrdersByUserId,
+  deleteSingleOrderById
+  
 
  };

@@ -133,6 +133,8 @@ export const updateCustomer = async (
 
 export const getSingleCustomerByUserId = async (userId: string) => {
 
+  console.log("userId service",userId)
+  
   const customer = await Customer.findOne({ user: userId })
 
     .populate('user', 'name email phone')

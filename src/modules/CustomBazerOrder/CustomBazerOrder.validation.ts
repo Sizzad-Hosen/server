@@ -23,6 +23,7 @@ export const createCustomBazerOrder = z.object({
     totalAmount: z.number().min(0, 'Total amount must be at least 0').optional(), // calculated
 
     status: z.enum( ["pending", "confirmed", "shipped", "delivered", "cancelled"]).optional(),
+      deletedByUser: z.boolean().optional(),
 
     paymentMethod: z.enum(['sslcommerz', 'cash_on_delivery'], {
       required_error: 'Payment method is required',

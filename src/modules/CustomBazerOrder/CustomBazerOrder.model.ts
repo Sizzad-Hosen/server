@@ -68,6 +68,10 @@ const customBazarOrderSchema = new Schema(
       phoneNumber: { type: String, required: true },
       fullAddress: { type: String, required: true },
     },
+      deletedByUser: {
+      type: Boolean,
+      default: false,
+    },
     invoiceId:{
  type: String,
  required: true,

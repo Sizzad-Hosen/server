@@ -6,7 +6,9 @@ import auth from "../../app/middlewares/auth";
 
 const router = express.Router();
 
-router.get('/', OrderControllers.getOrdersController)
+router.get('/', auth("admin"), OrderControllers.getOrdersController)
+
+router.delete('/:id',auth(), OrderControllers.handleDeleteSingleOrder);
 
 router.post("/create-order",
      auth("admin","customer"),
@@ -14,13 +16,23 @@ router.post("/create-order",
    OrderControllers.createOrderHandler);
    
 
-router.get('/track/:invoiceNumber',auth("admin","customer"), OrderControllers.trackOrder);
+router.get('/my-orders', auth("admin","customer"), OrderControllers.getAllOrdersByUserIdControllers);
+
+router.get('/track/:invoiceId',auth("admin","customer"), OrderControllers.trackOrder);   
+
+router.get('/:invoiceId', auth("admin","customer"), OrderControllers.getSingelOrder);
 
 
-router.patch('/update-status/:invoiceNumber', 
+router.patch('/update-status/:invoiceId', 
   auth("admin"),
   validateRequest(OrderValidationSchemas.orderStatusSchema),
   
   OrderControllers.updateOrderStatus);
+
+router.patch('/update-paymentstatus/:invoiceId', 
+  auth("admin"),
+  validateRequest(OrderValidationSchemas.orderPaymentStatusSchema),
+  
+  OrderControllers.updateOrderPaymentStatus);
 
 export const OrderRoutes = router;
