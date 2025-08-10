@@ -28,7 +28,7 @@ export const createCustomBazerOrder = z.object({
     paymentMethod: z.enum(['sslcommerz', 'cash_on_delivery'], {
       required_error: 'Payment method is required',
     }),
-
+ deliveryOption: z.enum(["insideRangpur", "outsideRangpur"]),
     address: z.object({
       fullName: z.string({ required_error: 'Full name is required' }),
       phoneNumber: z.string({ required_error: 'Phone number is required' }),
@@ -40,7 +40,16 @@ export const createCustomBazerOrder = z.object({
   }),
 });
 
+export const orderPaymentStatusSchema = z.object({
+  body: z.object({
+    status: z.enum(["pending","paid", "success", "failed"], {
+      errorMap: () => ({ message: "Invalid payment status value" }),
+    }),
+  }),
+});
+
 // Export
 export const CustomBazerOrderValidationSchemas = {
   createCustomBazerOrder,
+  orderPaymentStatusSchema
 };

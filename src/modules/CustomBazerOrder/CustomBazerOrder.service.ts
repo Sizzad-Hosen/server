@@ -189,11 +189,25 @@ export const deleteSingleOrderById = async (id: string, role: string) => {
     return order;
   }
 };
+
+const updateCustomOrderPaymentStatus = async (invoiceId: string, status: string) => {
+
+  return await CustomBazarOrder.findOneAndUpdate(
+
+    { invoiceId },
+
+    { paymentStatus:status },
+
+    { new: true }
+  );
+};
+
 export const CustomBazerOrderServices = {
   createOrderService,
   getOrdersService,
   getSingleOrderService,
   updateOrderStatus,
   getAllCustomOrdersByUserId,
-  deleteSingleOrderById
+  deleteSingleOrderById,
+  updateCustomOrderPaymentStatus
 };

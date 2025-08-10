@@ -9,6 +9,7 @@ export const createShippingAddressSchema = z.object({
 export const createOrderSchema = z.object({
   body: z.object({
     paymentMethod: z.enum(["cash_on_delivery", "sslcommerz"]),
+    deliveryOption: z.enum(["insideRangpur", "outsideRangpur"]),
     address: createShippingAddressSchema,
     deletedByUser: z.boolean().optional(),
   }),

@@ -24,7 +24,7 @@ const orderSchema = new Schema<TOrder>(
     },
     orderStatus: {
       type: String,
-      enum: ["pending","processing", "confirmed", "shipped", "delivered", "cancelled"],
+      enum: ["pending", "processing", "confirmed", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
     paymentMethod: {
@@ -34,16 +34,25 @@ const orderSchema = new Schema<TOrder>(
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid","success", "failed"],
+      enum: ["pending", "paid", "success", "failed"],
       default: "pending",
+    },
+    deliveryOption: {
+      type: String,
+      enum: ["insideRangpur", "outsideRangpur"],
+      required: true,
+      default: "insideRangpur",
     },
     address: {
       fullName: { type: String, required: true },
       phone: { type: String, required: true },
       fullAddress: { type: String, required: true },
-    
     },
-      deletedByUser: {
+      siteNote: {
+      type: String,
+      default: '',
+    },
+    deletedByUser: {
       type: Boolean,
       default: false,
     },

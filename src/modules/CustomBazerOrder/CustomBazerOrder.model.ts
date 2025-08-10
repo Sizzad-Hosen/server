@@ -63,6 +63,17 @@ const customBazarOrderSchema = new Schema(
       enum: ['sslcommerz', 'cash_on_delivery'],
       required: true,
     },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid","success", "failed"],
+      default: "pending",
+    },
+       deliveryOption: {
+      type: String,
+      enum: ["insideRangpur", "outsideRangpur"],
+      required: true,
+      default: "insideRangpur",
+    },
     address: {
       fullName: { type: String, required: true },
       phoneNumber: { type: String, required: true },
