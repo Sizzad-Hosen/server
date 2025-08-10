@@ -7,9 +7,8 @@ export const customBazarSearchableField = [
   'address.fullAddress', 
 ];
 
-
 export async function customBazarGenerateInvoiceId(): Promise<string> {
-  let invoiceId: string;
+  let invoiceId = '';
   let isUnique = false;
   let attempt = 0;
 

@@ -154,30 +154,29 @@ const getRecentProductsBySubcategory = async (
   page = 1,
   limit = 10
 ): Promise<PaginatedResult<IProduct>> => {
-  // Get all subcategories
-  const subcategories = await SubCategory.find().lean();
+  // Fetch all subcategories as plain objects
+ const subcategories = await SubCategory.find().lean<{ _id: string }[]>();
 
-  // Array to hold all products from all subcategories (2 each)
+
   let allProducts: IProduct[] = [];
 
   for (const subcat of subcategories) {
     const products = await Product.find({ subCategoryId: subcat._id })
       .sort({ createdAt: -1 })
       .limit(2)
-      .lean();
+      .lean<IProduct>();
 
     allProducts = allProducts.concat(products);
   }
 
-  // Sort allProducts by createdAt descending
+  // Sort by creation date descending
   allProducts.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
 
-  // Pagination logic (slice array)
   const total = allProducts.length;
-  console.log(total)
   const totalPages = Math.ceil(total / limit);
   const start = (page - 1) * limit;
   const end = start + limit;
+
   const paginatedProducts = allProducts.slice(start, end);
 
   return {
@@ -190,6 +189,8 @@ const getRecentProductsBySubcategory = async (
     },
   };
 };
+
+export default getRecentProductsBySubcategory;
 
 
 export const ProductServices = {

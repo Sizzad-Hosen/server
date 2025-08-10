@@ -6,7 +6,9 @@ import { createToken, verifyToken } from './auth.utils';
 import config from '../../app/config';
 import { sendEmail } from '../../app/utils/sendEmail';
 import bcrypt from 'bcrypt'
-
+import { Types } from 'mongoose';
+import {  Secret } from 'jsonwebtoken';
+import type { Jwt, SignOptions } from 'jsonwebtoken';
 
 const loginUser = async (payload: TLoginUser) => {
   const { email, password } = payload;
@@ -28,16 +30,25 @@ const loginUser = async (payload: TLoginUser) => {
   }
   console.log('bcrypt compare time:', Date.now() - startBcrypt, 'ms');
 
-  const jwtPayload = {
-    userId: user._id.toString(),
-    role: user.role,
-  };
+const jwtPayload = {
+  userId: (user._id as Types.ObjectId | string).toString(),
+  role: user.role,
+};
 
-  // Generate JWT tokens (very fast)
-  const accessToken = createToken(jwtPayload, config.jwt_access_secret, config.jwt_access_expires_in);
-  const refreshToken = createToken(jwtPayload, config.jwt_refresh_secret, config.jwt_refresh_expires_in);
+  if (
+    !config.jwt_access_secret || 
+    !config.jwt_refresh_secret || 
+    !config.jwt_access_expires_in || 
+    !config.jwt_refresh_expires_in
+  ) {
+    throw new Error('JWT configuration is not properly set');
+  }
 
-  console.log('Total login time:', Date.now() - start, 'ms');
+  const jwtAccessExpiresIn = config.jwt_access_expires_in || "24h";  // ডিফল্ট
+  const jwtRefreshExpiresIn = config.jwt_refresh_expires_in || "7d";  // ডিফল্ট
+
+  const accessToken = createToken(jwtPayload, config.jwt_access_secret as Secret, jwtAccessExpiresIn as SignOptions['expiresIn']);
+  const refreshToken = createToken(jwtPayload, config.jwt_refresh_secret as Secret, jwtRefreshExpiresIn as SignOptions['expiresIn']);
 
   return { accessToken, refreshToken };
 };
@@ -56,17 +67,14 @@ const refreshToken = async (token: string) => {
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
   }
+const jwtPayload = {
+  userId: (user._id as Types.ObjectId | string).toString(),
+  role: user.role,
+};
 
-  const jwtPayload = {
-    userId: user._id.toString(),
-    role: user.role,
-  };
+  const jwtAccessExpiresIn = config.jwt_access_expires_in || "24h";  // ডিফল্ট
 
-  const accessToken = createToken(
-    jwtPayload,
-    config.jwt_access_secret as string,
-    config.jwt_access_expires_in as string
-  );
+  const accessToken = createToken(jwtPayload, config.jwt_access_secret as Secret, jwtAccessExpiresIn as SignOptions['expiresIn']);
 
   return {
     accessToken,
@@ -83,11 +91,10 @@ const forgetPassword = async (email: string) => {
     if (!user) {
       throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
     }
-
-    const jwtPayload = {
-      userId: user._id.toString(),
-      role: user.role,
-    };
+const jwtPayload = {
+  userId: (user._id as Types.ObjectId | string).toString(),
+  role: user.role,
+};
 
     const resetToken = createToken(
       jwtPayload,

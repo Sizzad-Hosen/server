@@ -85,6 +85,7 @@ export const createOrderService = async (
     paymentMethod: payload.paymentMethod,
     address: payload.address,
     siteNote: payload.siteNote,
+    deliveryOption:payload.deliveryOption
   };
 
   // Create order

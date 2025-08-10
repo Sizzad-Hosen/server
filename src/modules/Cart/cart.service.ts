@@ -8,7 +8,6 @@ const getCartByUser = async (userId: string) => {
   const cart = await Cart.findOne({ userId });
   if (!cart) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Cart not found');
-    
   }
   return cart;
 };
@@ -29,7 +28,7 @@ const addOrUpdateCartItem = async (userId: string, item: TCartItem) => {
     });
   } else {
     const existingItem = cart.items.find(
-      (i) => i.productId.toString() === item.productId.toString()
+      (i: TCartItem) => i.productId.toString() === item.productId.toString()
     );
 
     if (existingItem) {
@@ -37,7 +36,7 @@ const addOrUpdateCartItem = async (userId: string, item: TCartItem) => {
 
       if (existingItem.quantity <= 0) {
         cart.items = cart.items.filter(
-          (i) => i.productId.toString() !== item.productId.toString()
+          (i: TCartItem) => i.productId.toString() !== item.productId.toString()
         );
       }
     } else {
@@ -47,11 +46,11 @@ const addOrUpdateCartItem = async (userId: string, item: TCartItem) => {
     }
 
     cart.totalQuantity = cart.items.reduce(
-      (sum: number, i) => sum + i.quantity,
+      (sum: number, i: TCartItem) => sum + i.quantity,
       0
     );
     cart.totalAmount = cart.items.reduce(
-      (sum: number, i) => sum + i.quantity * i.price,
+      (sum: number, i: TCartItem) => sum + i.quantity * i.price,
       0
     );
 
@@ -68,7 +67,7 @@ const removeFromCart = async (userId: string, productId: string) => {
   }
 
   const item = cart.items.find(
-    (i) => i.productId.toString() === productId.toString()
+    (i: TCartItem) => i.productId.toString() === productId.toString()
   );
 
   if (!item) {
@@ -76,12 +75,12 @@ const removeFromCart = async (userId: string, productId: string) => {
   }
 
   cart.items = cart.items.filter(
-    (i) => i.productId.toString() !== productId.toString()
+    (i: TCartItem) => i.productId.toString() !== productId.toString()
   );
 
-  cart.totalQuantity = cart.items.reduce((sum, i) => sum + i.quantity, 0);
+  cart.totalQuantity = cart.items.reduce((sum: number, i: TCartItem) => sum + i.quantity, 0);
   cart.totalAmount = cart.items.reduce(
-    (sum, i) => sum + i.quantity * i.price,
+    (sum: number, i: TCartItem) => sum + i.quantity * i.price,
     0
   );
 
@@ -100,7 +99,7 @@ const updateCartItemQuantity = async (
   }
 
   const itemIndex = cart.items.findIndex(
-    (i) => i.productId.toString() === productId.toString()
+    (i: TCartItem) => i.productId.toString() === productId.toString()
   );
 
   if (itemIndex === -1) {
@@ -113,16 +112,15 @@ const updateCartItemQuantity = async (
     cart.items[itemIndex].quantity = quantity;
   }
 
-  cart.totalQuantity = cart.items.reduce((sum, i) => sum + i.quantity, 0);
+  cart.totalQuantity = cart.items.reduce((sum: number, i: TCartItem) => sum + i.quantity, 0);
   cart.totalAmount = cart.items.reduce(
-    (sum, i) => sum + i.quantity * i.price,
+    (sum: number, i: TCartItem) => sum + i.quantity * i.price,
     0
   );
 
   await cart.save();
   return cart;
 };
-
 
 const checkoutCart = async (userId: string) => {
   const cart = await Cart.findOne({ userId });
@@ -149,8 +147,6 @@ const clearCart = async (userId: string) => {
   }
   return cart;
 };
-
-
 
 export const CartServices = {
   getCartByUser,

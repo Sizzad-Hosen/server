@@ -4,8 +4,12 @@ import { PaymentModel } from "./payment.model";
 import SSLCommerzPayment from "sslcommerz-lts";
 import { v4 as uuidv4 } from "uuid";
 import { OrderModel } from "../Orders/order.model";
+import { User } from "../Users/user.model";
 
 export const createCodPayment = async (orderId: string, userId: string) => {
+
+  const user = await User.findById({userId})
+  
   const order = await OrderModel.findById(orderId);
   if (!order) throw new Error("Order not found");
 
@@ -27,47 +31,23 @@ export const createCodPayment = async (orderId: string, userId: string) => {
   return codPayment;
 };
 
-
 export const createSslPayment = async (orderId: string, userId: string) => {
-
-console.log("orderId:", orderId)
-console.log("userId:", userId)
-
-  // const order = await OrderModel.findOne({ 
-  //   _id: orderId, 
-  //   user: userId, 
-  //   paymentStatus: "pending" 
-  // }).populate("user");
-  
-const order = await OrderModel.findById(orderId);
-console.log("Basic order:", order)
-
-  console.log("order", order)
-
-  
-
+  const order = await OrderModel.findById(orderId).populate('user');
   if (!order) throw new Error("Order not found or already paid");
 
   const tran_id = uuidv4();
 
-  // Validate environment variables
   if (!process.env.STORE_ID || !process.env.STORE_PASSWORD) {
     throw new Error("SSLCommerz credentials not configured");
   }
 
-  const isSandbox = (process.env.SSL_COMMERZ_MODE || '').toLowerCase() === 'sandbox';
-
-  // Initialize SSLCommerz with environment variables
-const sslcz = new SSLCommerzPayment('restr688873c004cb8', 'restr688873c004cb8@ssl', false);
-
-
-console.log("zzlz", sslcz)
-
-
-  // Validate frontend and backend URLs
   if (!process.env.FRONTEND_URL || !process.env.SERVER_URL) {
     throw new Error("Frontend or server URL not configured");
   }
+
+  const sslcz = new SSLCommerzPayment(process.env.STORE_ID, process.env.STORE_PASSWORD, false);
+
+  const user = order.user as { email?: string } | undefined;
 
   const data = {
     total_amount: order.totalPrice,
@@ -81,28 +61,25 @@ console.log("zzlz", sslcz)
     product_category: "Ecommerce",
     product_profile: "general",
     shipping_method: "Courier",
-  ship_name: "Customer Name",
-ship_add1: "Dhaka",
-ship_city: "Dhaka",
-ship_state: "Dhaka",
-ship_postcode: "1000",
-ship_country: "Bangladesh",
+    ship_name: "Customer Name",
+    ship_add1: "Dhaka",
+    ship_city: "Dhaka",
+    ship_state: "Dhaka",
+    ship_postcode: "1000",
+    ship_country: "Bangladesh",
 
-    cus_name: order.shippingAddress.fullName || "Customer",
-    cus_email: order.user?.email || "customer@example.com",
-    cus_add1: order.shippingAddress.address,
-    cus_city: order.shippingAddress.city,
-    cus_postcode: order.shippingAddress.postalCode,
-    cus_country: order.shippingAddress.country || "Bangladesh",
-    cus_phone: order.shippingAddress.phone,
+    cus_name: order.address.fullName || "Customer",
+    cus_email: user?.email || "customer@example.com",
+    cus_add1: order.address.fullAddress || "",
+    cus_phone: order.address.phone || "",
     value_a: orderId,
     value_b: userId,
     multi_card_name: '', // Optional
     allowed_bin: '', // Optional
-    emi_option: 0, // Optional
-    emi_max_inst_option: 0, // Optional
-    emi_selected_inst: 0, // Optional
-    emi_allow_only: 0 // Optional
+    emi_option: 0,
+    emi_max_inst_option: 0,
+    emi_selected_inst: 0,
+    emi_allow_only: 0
   };
 
   try {
@@ -128,7 +105,7 @@ ship_country: "Bangladesh",
     return { GatewayPageURL: response.GatewayPageURL };
   } catch (error) {
     console.error("SSLCommerz Error:", error);
-    throw new Error(`Payment initialization failed: ${error.message}`);
+    throw new Error(`Payment initialization failed: ${error}`);
   }
 };
 

@@ -58,7 +58,8 @@ console.log("userId", userId)
 if (!userId) {
   console.error('No userId found in req.user');
 
-  throw new AppError('Unauthorized access', httpStatus.UNAUTHORIZED);
+throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized access');
+
 }
 
     console.log('Fetching customer with ID:', userId);
