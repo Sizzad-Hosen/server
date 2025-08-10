@@ -13,8 +13,10 @@ const createOrUpdateCustomer = async (
   userId: string,
   file?: any
 ): Promise<ICustomer> => {
+  
   const user = await User.findById(userId).lean();
-  if (!user) throw new AppError('User not found', 404);
+
+  if (!user) throw new AppError(httpStatus.NOT_FOUND,'User not found');
 
   // Address handle (as before)
   let addressId;
@@ -33,7 +35,7 @@ const createOrUpdateCustomer = async (
   };
 
   if (file) {
-    sendImageToCloudinary(`${userId}_${payload.name || 'customer'}`, file.path)
+    sendImageToCloudinary(`${userId}_${user.name || 'customer'}`, file.path)
       .then(({ secure_url }) => {
         Customer.findOneAndUpdate(
           { user: userId },
@@ -61,7 +63,9 @@ export const updateCustomer = async (
   file?: any
 ): Promise<ICustomer> => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError('Invalid customer ID', httpStatus.BAD_REQUEST);
+    throw new AppError(httpStatus.BAD_REQUEST,'Invalid customer ID', );
+
+
   }
 
   const userId = payload.user;
@@ -102,7 +106,7 @@ export const updateCustomer = async (
     .populate('address');
 
   if (!updatedCustomer) {
-    throw new AppError('Customer not found', httpStatus.NOT_FOUND);
+    throw new AppError(httpStatus.NOT_FOUND,'Customer not found');
   }
 
   return updatedCustomer;
@@ -121,7 +125,7 @@ export const getSingleCustomerByUserId = async (userId: string) => {
   console.log('Customer found:', customer);
 
   if (!customer) {
-    throw new AppError('Customer not found', httpStatus.NOT_FOUND);
+    throw new AppError(httpStatus.NOT_FOUND,'Customer not found', );
   }
 
   return customer;

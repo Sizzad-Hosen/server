@@ -11,6 +11,11 @@ import AppError from "../../app/config/error/AppError";
 import QueryBuilder from "../../app/builder/QueryBuilder";
 import { ordersSearchableField } from "./order.constance";
 
+interface ICartItem {
+  price?: number;
+  productId?: { price?: number };
+  quantity: number;
+}
 const createOrder = async (orderData: TOrder, userId: string) => {
   const user = await User.findById(userId);
   if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
@@ -20,7 +25,8 @@ const createOrder = async (orderData: TOrder, userId: string) => {
     throw new AppError(httpStatus.BAD_REQUEST, "No items in cart");
   }
 
-  const totalPrice = cart.items.reduce((acc, item) => {
+
+  const totalPrice = cart.items.reduce((acc: number, item: ICartItem) => {
     const price = item.price ?? item.productId?.price;
     if (!price) throw new AppError(httpStatus.BAD_REQUEST, "Product price missing");
     return acc + price * item.quantity;
