@@ -29,31 +29,33 @@ const userSchema = new Schema<IUser, UserModel>(
 
 
 userSchema.pre('save', async function (next) {
-  const user = this as IUser;
-  if (!user.isModified('password')) return next(); 
-  user.password = await bcrypt.hash(user.password, Number(config.bcrypt_salt_rounds || 10));
+  if (!this.isModified('password')) return next();
+
+
+  const saltRounds = Number(config.bcrypt_salt_rounds) || 10;
+  this.password = await bcrypt.hash(this.password, saltRounds);
   next();
 });
 
-
-userSchema.statics.isUserExistsByCustomId = async function (id: string) {
-  return await this.findOne({ _id: id }).select('+password');
+userSchema.statics.isUserExistsByCustomId = function (id: string) {
+  return this.findById(id).select('+password').lean();
 };
 
-userSchema.statics.isPasswordMatched = async function (
-  plainTextPassword: string,
-  hashedPassword: string
-): Promise<boolean> {
-  return await bcrypt.compare(plainTextPassword, hashedPassword);
+
+userSchema.statics.isPasswordMatched = function (plainText: string, hashed: string) {
+  return bcrypt.compare(plainText, hashed);
 };
+
 
 userSchema.statics.isJWTIssuedBeforePasswordChanged = function (
-  passwordChangedTimestamp: Date,
+  passwordChangedAt: Date,
   jwtIssuedTimestamp: number
-): boolean {
-  const passwordChangedTime = new Date(passwordChangedTimestamp).getTime() / 1000;
-  return passwordChangedTime > jwtIssuedTimestamp;
+) {
+  if (!passwordChangedAt) return false;
+  return passwordChangedAt.getTime() / 1000 > jwtIssuedTimestamp;
 };
+
+
 
 // ✅ Final model export
 export const User = mongoose.model<IUser, UserModel>('User', userSchema);

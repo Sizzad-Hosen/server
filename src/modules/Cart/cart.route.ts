@@ -17,6 +17,7 @@ router.delete('/remove/:productId',auth(), CartControllers.removeFromCartControl
 
 router.post('/update/:productId',auth(), CartControllers.updateCartItemController);
 
+
 router.post('/checkout',auth(), CartControllers.checkoutCartController);
 
 

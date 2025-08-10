@@ -22,6 +22,10 @@ export const createProductSchema = z.object({
       .number()
       .min(0, { message: 'Price must be greater than or equal to 0' }),
 
+    discount: z
+      .number()
+      .min(0, { message: 'Price must be greater than or equal to 0' }),
+
     quantity: z
       .number()
       .min(0, { message: 'Quantity must be greater than or equal to 0' }),

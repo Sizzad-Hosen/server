@@ -22,11 +22,13 @@ router.post('/create-product',
     validateRequest(ProductsValidationSchemas.createProductSchema),
 ProductControllers.createProductController)
 
-router.get('/',auth("admin","customer"),ProductControllers.getAllProductsController)
+router.get('/',ProductControllers.getAllProductsController)
+
+router.get('/sub-products',ProductControllers.getRecentProductsInSub)
 
 router.get('/:id',auth("admin","customer"),ProductControllers.getProductByIdController)
 
-router.put('/:id',auth("admin"),ProductControllers.updateProductController)
+router.patch('/:id',auth("admin"),ProductControllers.updateProductController)
 
 router.delete('/:id',auth("admin"),ProductControllers.deleteProductController)
 

@@ -9,6 +9,9 @@ export interface TCustomBazerOrderItem {
   pricePerUnit: number;            // From subcategory
   totalPrice: number;              // quantity * pricePerUnit
 }
+export type TPaymentStatus = "pending" |"paid"| "success" | "failed";
+
+export type TDeliveryOption = "insideRangpur" | "outsideRangpur";
 
 export interface TCustomBazerOrder {
   user: Types.ObjectId;
@@ -16,11 +19,13 @@ export interface TCustomBazerOrder {
   totalAmount: number;
   status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
   paymentMethod: 'sslcommerz' | 'cash_on_delivery';
+  paymentStatus?: TPaymentStatus;
   address: {
     fullName: string;
     phoneNumber: string;
     fullAddress: string;
   };
+  deliveryOption: TDeliveryOption;
   invoiceId:string;
   siteNote?: string;
   deletedByUser?: boolean; 

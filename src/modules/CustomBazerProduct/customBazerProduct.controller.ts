@@ -14,21 +14,27 @@ export const CreateProductController = async (req: Request, res: Response) => {
     });
  
 };
-
 export const AllProductsController = async (req: Request, res: Response) => {
+  const { category, subcategory, page, limit } = req.query;
 
-    const { category, subcategory } = req.query;
-    const products = await CustomBazerProductServices.getAllProducts({
-      category: category?.toString(),
-      subcategory: subcategory?.toString(),
-    });
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Custom Bazer Products fetched successfully",
-      data: products,
-    });
+  const products = await CustomBazerProductServices.getAllProducts({
+    category: category?.toString(),
+    subcategory: subcategory?.toString(),
+    page: Number(page),
+    limit: Number(limit),
+  });
 
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Custom Bazer Products fetched successfully",
+    data: products.products, // the actual list
+    meta: {
+      total: products.total,
+      page: products.page,
+      limit: products.limit,
+    },
+  });
 };
 
 export const GetProductByIdController = async (req: Request, res: Response) => {

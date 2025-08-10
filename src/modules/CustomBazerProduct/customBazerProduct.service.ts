@@ -12,13 +12,28 @@ export const createProduct = async (data: TCustomProduct) => {
 export const getAllProducts = async (query: {
   category?: string;
   subcategory?: string;
+  page?: number;
+  limit?: number;
 }) => {
   const filter: any = {};
   if (query.category) filter.category = query.category;
   if (query.subcategory) filter.subcategory = query.subcategory;
 
-  const products = await CustomBazerProductModel.find(filter);
-  return products;
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const total = await CustomBazerProductModel.countDocuments(filter);
+  const products = await CustomBazerProductModel.find(filter)
+    .skip(skip)
+    .limit(limit);
+
+  return {
+    total,
+    page,
+    limit,
+    products,
+  };
 };
 
 export const getProductById = async (id: string) => {

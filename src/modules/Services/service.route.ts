@@ -13,7 +13,7 @@ router.post('/create-service',
     ,
      ServiceControllers.createServiceController);
 
-router.get('/',auth("admin","customer"), ServiceControllers.getAllServicesController);
+router.get('/', ServiceControllers.getAllServicesController);
 
 
 router.get('/:id/categories-subcategories-products', ServiceControllers.getServiceFullTreeController);

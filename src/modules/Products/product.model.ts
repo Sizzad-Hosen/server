@@ -28,6 +28,11 @@ const ProductSchema = new Schema(
       required: true,
       min: [0, "Price must be positive"],
     },
+   discount: {
+      type: Number,
+      required: true,
+      min: [0, "DiscountPrice must be positive"],
+    },
     quantity: {
       type: Number,
       required: true,

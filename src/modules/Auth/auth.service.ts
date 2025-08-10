@@ -7,51 +7,42 @@ import config from '../../app/config';
 import { sendEmail } from '../../app/utils/sendEmail';
 import bcrypt from 'bcrypt'
 
+
 const loginUser = async (payload: TLoginUser) => {
   const { email, password } = payload;
 
+  const start = Date.now();
+
+  // Find user by email (ensure email index exists)
   const user = await User.findOne({ email }).select('+password');
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found!');
   }
+  console.log('DB query time:', Date.now() - start, 'ms');
 
-
-  const isPasswordMatched = await User.isPasswordMatched(password, user.password); 
-
-console.log("Login payload password:", password);
-console.log("Stored user password:", user.password);
-
-console.log("Password match result:", isPasswordMatched);
-
-
+  const startBcrypt = Date.now();
+  // Password comparison
+  const isPasswordMatched = await bcrypt.compare(password, user.password);
   if (!isPasswordMatched) {
-    throw new AppError(httpStatus.UNAUTHORIZED, 'Password does not match!');
+    throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid password!');
   }
+  console.log('bcrypt compare time:', Date.now() - startBcrypt, 'ms');
 
   const jwtPayload = {
-    userId: (user._id as string | { toString(): string }).toString(),
+    userId: user._id.toString(),
     role: user.role,
   };
 
+  // Generate JWT tokens (very fast)
+  const accessToken = createToken(jwtPayload, config.jwt_access_secret, config.jwt_access_expires_in);
+  const refreshToken = createToken(jwtPayload, config.jwt_refresh_secret, config.jwt_refresh_expires_in);
 
-  const accessToken = createToken(
-    jwtPayload,
-    config.jwt_access_secret,
-    config.jwt_access_expires_in
-  );
+  console.log('Total login time:', Date.now() - start, 'ms');
 
-  const refreshToken = createToken(
-    jwtPayload,
-    config.jwt_refresh_secret,
-    config.jwt_refresh_expires_in
-  );
-
-  return {
-    accessToken,
-    refreshToken,
-  };
+  return { accessToken, refreshToken };
 };
 
+export default loginUser;
 
 const refreshToken = async (token: string) => {
   // checking if the given token is valid

@@ -2,6 +2,7 @@ import QueryBuilder from "../../app/builder/QueryBuilder";
 import { sendImageToCloudinary } from "../../app/utils/sendImageToCloudinary";
 import { Category } from "../Category/category.model";
 import { Service } from "../Services/service.model";
+import { TSubCategory } from "../SubCategory/subcategory.interface";
 import { SubCategory } from "../SubCategory/subcategory.model";
 import { IGenericResponse, productSearchableField } from "./product.constance";
 import { IProduct } from "./product.interface";
@@ -134,12 +135,70 @@ const updateProduct = async (id: string, payload: Partial<any>) => {
 
   }
 
+  export interface SubcategoryProducts {
+  subcategory: TSubCategory;
+  products: IProduct[];
+}
+
+interface PaginatedResult<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+const getRecentProductsBySubcategory = async (
+  page = 1,
+  limit = 10
+): Promise<PaginatedResult<IProduct>> => {
+  // Get all subcategories
+  const subcategories = await SubCategory.find().lean();
+
+  // Array to hold all products from all subcategories (2 each)
+  let allProducts: IProduct[] = [];
+
+  for (const subcat of subcategories) {
+    const products = await Product.find({ subCategoryId: subcat._id })
+      .sort({ createdAt: -1 })
+      .limit(2)
+      .lean();
+
+    allProducts = allProducts.concat(products);
+  }
+
+  // Sort allProducts by createdAt descending
+  allProducts.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+
+  // Pagination logic (slice array)
+  const total = allProducts.length;
+  console.log(total)
+  const totalPages = Math.ceil(total / limit);
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const paginatedProducts = allProducts.slice(start, end);
+
+  return {
+    data: paginatedProducts,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
+};
+
+
 export const ProductServices = {
 
     createProduct,
     getAllProducts,
     updateProduct,
     deleteProduct,
-    getSingelProduct
+    getSingelProduct,
+    getRecentProductsBySubcategory
 
 }

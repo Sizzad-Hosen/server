@@ -48,6 +48,7 @@ export const addToCartController = catchAsync(async (req: Request, res: Response
 
 // Clear Cart
 export const clearCartController = catchAsync(async (req: Request, res: Response) => {
+  
   const userId = getUserId(req);
 
   const result = await CartServices.clearCart(userId);

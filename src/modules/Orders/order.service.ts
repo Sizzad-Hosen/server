@@ -12,14 +12,10 @@ import QueryBuilder from "../../app/builder/QueryBuilder";
 import { ordersSearchableField } from "./order.constance";
 
 const createOrder = async (orderData: TOrder, userId: string) => {
-
-
   const user = await User.findById(userId);
-
   if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
 
   const cart = await Cart.findOne({ userId }).populate("items.productId");
-
   if (!cart || !cart.items || cart.items.length === 0) {
     throw new AppError(httpStatus.BAD_REQUEST, "No items in cart");
   }
@@ -32,10 +28,7 @@ const createOrder = async (orderData: TOrder, userId: string) => {
 
   const invoiceId = await generateInvoiceId();
 
-  
-
   const order = new OrderModel({
-
     user: userId,
     cart: cart._id,
     totalPrice,
@@ -44,18 +37,20 @@ const createOrder = async (orderData: TOrder, userId: string) => {
     address: orderData.address,
     orderStatus: "pending",
     paymentStatus: "pending",
-
   });
 
   const savedOrder = await order.save();
 
-  console.log("saveorder", savedOrder)
+  // Clear the cart after order is saved
+  cart.items = [];
+  await cart.save();
+
+  console.log("saveorder", savedOrder);
 
   if (order.paymentMethod === "cash_on_delivery") {
     await createCodPayment(savedOrder._id.toString(), userId);
     return savedOrder;
   }
-
 
   if (order.paymentMethod === "sslcommerz") {
     const { GatewayPageURL: paymentUrl } = await createSslPayment(savedOrder._id.toString(), userId);
@@ -64,6 +59,7 @@ const createOrder = async (orderData: TOrder, userId: string) => {
 
   throw new AppError(httpStatus.BAD_REQUEST, "Unsupported payment method");
 };
+
 
 
 export const getOrderByInvoice = async (invoiceId: string) => {

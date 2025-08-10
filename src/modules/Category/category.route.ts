@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.post('/create-category',  auth("admin"), validateRequest(CategoryValidationSchemas.createCategorySchema),CategoryControllers.createCategoryController);
 
-router.get('/',  auth("admin","customer"), CategoryControllers.getAllCategoriesController);
+router.get('/', CategoryControllers.getAllCategoriesController);
 
 router.get('/categoryByServiceId/:serviceId',auth("admin","customer"), CategoryControllers.getCategoriesByServiceIdController);
 

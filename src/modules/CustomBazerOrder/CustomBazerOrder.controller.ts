@@ -4,9 +4,10 @@ import catchAsync from '../../app/utils/catchAsync';
 import sendResponse from '../../app/utils/sendResponse';
 import httpStatus from 'http-status';
 
+
 export const createOrderController = catchAsync(async (req: Request, res: Response) => {
 
-    const userId = req?.user?.userId
+const userId = req?.user?.userId
 const result = await CustomBazerOrderServices.createOrderService(userId ,req.body);
 
 sendResponse(res, {
@@ -118,12 +119,41 @@ export const handleDeleteSingleOrder = catchAsync(
     });
   }
 );
+export const updateCustomOrderPaymentController = catchAsync(async (req: Request, res: Response) => {
 
+  const { invoiceId } = req.params;
+
+  const { status } = req.body;
+
+  if (!status) {
+    return res.status(httpStatus.BAD_REQUEST).json({
+      success: false,
+      message: 'Order status is required',
+    });
+  }
+
+  const updatedCustomOrder = await CustomBazerOrderServices.updateCustomOrderPaymentStatus(invoiceId, status);
+
+  if (!updatedCustomOrder) {
+    return res.status(httpStatus.NOT_FOUND).json({
+      success: false,
+      message: 'Order updated not found',
+    });
+  }
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Order Payment status updated successfully',
+    data: updatedCustomOrder,
+  });
+});
 export const CustomBazerOrderControllers = {
 createOrderController,
 getOrdersController,
 getSingleOrderController,
 updateOrderStatusController,
 getAllCustomOrdersByUserIdControllers,
-handleDeleteSingleOrder
+handleDeleteSingleOrder,
+updateCustomOrderPaymentController
 };

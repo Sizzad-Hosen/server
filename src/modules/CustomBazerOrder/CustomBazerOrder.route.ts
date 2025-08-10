@@ -26,4 +26,13 @@ router.patch('/status/:invoiceId',
     
      CustomBazerOrderControllers.updateOrderStatusController);
 
+
+     
+router.patch('/update-paymentstatus/:invoiceId', 
+  auth("admin"),
+  validateRequest(CustomBazerOrderValidationSchemas.orderPaymentStatusSchema),
+  
+  CustomBazerOrderControllers.updateCustomOrderPaymentController);
+
+
 export const CustomBazerOrderRoutes = router;

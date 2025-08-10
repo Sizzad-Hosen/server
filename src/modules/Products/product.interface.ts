@@ -11,7 +11,7 @@ export interface IProduct {
   serviceId: Types.ObjectId;
   categoryId: Types.ObjectId;
   subCategoryId: Types.ObjectId;
-
+ discount?: number;
   isPublished: boolean;
 
   createdAt?: Date;

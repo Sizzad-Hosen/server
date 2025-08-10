@@ -108,10 +108,32 @@ export const deleteProductController = catchAsync(
   }
 );
 
+
+const getRecentProductsInSub = catchAsync(async (req: Request, res: Response) => {
+  // Parse pagination query params with defaults
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+
+  // Pass page and limit to service
+  const data = await ProductServices.getRecentProductsBySubcategory(page, limit);
+console.log(data)
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Recent products retrieved successfully',
+    data:{
+       data:data.data,
+       meta: data?.meta,
+    }
+    
+  });
+});
+
 export const ProductControllers = {
     createProductController,
     getAllProductsController,
     getProductByIdController,
     updateProductController,
-    deleteProductController
+    deleteProductController,
+    getRecentProductsInSub
 }
