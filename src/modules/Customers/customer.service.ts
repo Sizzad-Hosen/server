@@ -7,76 +7,54 @@ import mongoose from 'mongoose';
 import { ShippingAddressModel } from '../Address/address.model';
 import { sendImageToCloudinary } from '../../app/utils/sendImageToCloudinary';
 
+
 const createOrUpdateCustomer = async (
   payload: ICustomer,
   userId: string,
-  file: any
+  file?: any
 ): Promise<ICustomer> => {
+  const user = await User.findById(userId).lean();
+  if (!user) throw new AppError('User not found', 404);
 
-  const gender = payload.gender;
-
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new AppError('User not found', httpStatus.NOT_FOUND);
-  }
-
-  // ✅ File Upload
-  if (file) {
-    console.log('[11] Starting file upload...');
-    const imageName = `${userId}_${user.name}`;
-    console.log('[12] Image name:', imageName);
-
-    const { secure_url } = await sendImageToCloudinary(imageName, file.path);
-    console.log('[13] File uploaded successfully:', secure_url);
-
-    payload.profileImage = secure_url;
-  }
-
-  let addressId = undefined;
-
-  // Handle address creation or use existing
+  // Address handle (as before)
+  let addressId;
   if (payload.address) {
-    if (
-      typeof payload.address === 'object' &&
-      !mongoose.Types.ObjectId.isValid(String(payload.address))
-    ) {
+    if (typeof payload.address === 'object' && !mongoose.Types.ObjectId.isValid(String(payload.address))) {
       const newAddress = await ShippingAddressModel.create(payload.address);
-      addressId = newAddress._id;
+      addressId = newAddress._id.toString();
     } else {
-      addressId = payload.address as any;
+      addressId = String(payload.address);
     }
   }
 
-  // Find existing customer by user ID
-  const existingCustomer = await Customer.findOne({ user: userId });
+  const updateData: Partial<ICustomer> = {
+    gender: payload.gender,
+    address: addressId,
+  };
 
-  if (existingCustomer) {
-    if (gender && ['male', 'female', 'other'].includes(gender)) {
-      existingCustomer.gender = gender as 'male' | 'female' | 'other';
-    }
-
-    if (payload.profileImage) {
-      existingCustomer.profileImage = payload.profileImage;
-    }
-
-    if (addressId) {
-      existingCustomer.address = addressId;
-    }
-
-    await existingCustomer.save();
-    return existingCustomer;
-  } else {
-    // Create new customer
-    const newCustomer = await Customer.create({
-      user: userId,
-      gender,
-      profileImage: payload.profileImage,
-      address: addressId,
-    });
-
-    return newCustomer;
+  if (file) {
+    sendImageToCloudinary(`${userId}_${payload.name || 'customer'}`, file.path)
+      .then(({ secure_url }) => {
+        Customer.findOneAndUpdate(
+          { user: userId },
+          { $set: { profileImage: secure_url } },
+          { new: true }
+        ).exec();
+      })
+      .catch(console.error);
   }
+
+  const customer = await Customer.findOneAndUpdate(
+    { user: userId },
+    { $set: updateData, $setOnInsert: { user: userId } },
+    { new: true, upsert: true }
+  ).lean();
+
+  return customer as ICustomer;
 };
+
+
+
 export const updateCustomer = async (
   id: string,
   payload: Partial<ICustomer>,
