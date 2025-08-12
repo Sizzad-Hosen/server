@@ -2,71 +2,72 @@
 
 import { OrderModel } from "./order.model";
 import { generateInvoiceId } from "./order.utils";
-import { TOrder } from "./order.interface";
-import {  createCodPayment, createSslPayment } from "../Payment/payment.service";
+import { TOrder, TOrderItem } from "./order.interface";
+import { createCodPayment, createSslPayment } from "../Payment/payment.service";
 import { User } from "../Users/user.model";
 import { Cart } from "../Cart/cart.model";
 import httpStatus from "http-status";
 import AppError from "../../app/config/error/AppError";
 import QueryBuilder from "../../app/builder/QueryBuilder";
 import { ordersSearchableField } from "./order.constance";
+import { title } from "process";
+import { Types } from "mongoose";
 
-interface ICartItem {
+type CartItem = {
+  productId: {
+    _id: Types.ObjectId;
+    title: string;
+    price?: number;
+    image?: string;
+  };
   price?: number;
-  productId?: { price?: number };
   quantity: number;
-}
-const createOrder = async (orderData: TOrder, userId: string) => {
+  image?: string;
+};
+
+export const createOrder = async (
+  orderData: TOrder,
+  userId: string
+): Promise<TOrder> => {
   const user = await User.findById(userId);
-  if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  if (!user) throw new Error("User not found");
 
-  const cart = await Cart.findOne({ userId }).populate("items.productId");
-  if (!cart || !cart.items || cart.items.length === 0) {
-    throw new AppError(httpStatus.BAD_REQUEST, "No items in cart");
-  }
+  const cart = await Cart.findOne({ userId }).populate<{ items: Array<{ productId: { _id: Types.ObjectId; title: string; price?: number; image?: string } }> }>("items.productId");
 
+  if (!cart || !cart.items.length) throw new Error("Cart is empty");
 
-  const totalPrice = cart.items.reduce((acc: number, item: ICartItem) => {
-    const price = item.price ?? item.productId?.price;
-    if (!price) throw new AppError(httpStatus.BAD_REQUEST, "Product price missing");
-    return acc + price * item.quantity;
-  }, 0);
-
+  const items: TOrderItem[] = cart.items.map((item: CartItem) => ({
+    productId: item.productId._id,
+    title: item.productId.title,
+    price: item.price ?? item.productId.price ?? 0,
+    quantity: item.quantity,
+    image: item.image ?? item.productId.image ?? "https://via.placeholder.com/300x300.png?text=No+Image",
+  }));
+  const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const invoiceId = await generateInvoiceId();
 
   const order = new OrderModel({
     user: userId,
     cart: cart._id,
-    totalPrice,
+    items,
     invoiceId,
+    totalPrice,
     paymentMethod: orderData.paymentMethod,
     address: orderData.address,
     orderStatus: "pending",
     paymentStatus: "pending",
+    deliveryOption: orderData.deliveryOption,
+    siteNote: orderData.siteNote ?? "",
   });
 
   const savedOrder = await order.save();
 
-  // Clear the cart after order is saved
+  // Clear cart items after order saved
   cart.items = [];
   await cart.save();
 
-  console.log("saveorder", savedOrder);
-
-  if (order.paymentMethod === "cash_on_delivery") {
-    await createCodPayment(savedOrder._id.toString(), userId);
-    return savedOrder;
-  }
-
-  if (order.paymentMethod === "sslcommerz") {
-    const { GatewayPageURL: paymentUrl } = await createSslPayment(savedOrder._id.toString(), userId);
-    return { paymentUrl };
-  }
-
-  throw new AppError(httpStatus.BAD_REQUEST, "Unsupported payment method");
+  return savedOrder.toObject();
 };
-
-
 
 export const getOrderByInvoice = async (invoiceId: string) => {
 
@@ -118,23 +119,21 @@ export const getAllOrders = async (query: any, role: string, userId?: string) =>
   }
 };
 
-
 export const getAllOrdersByUserId = async (userId: string) => {
   try {
-    
-    console.log("ser userId", userId)
+    console.log("ser userId", userId);
 
     const orders = await OrderModel.find({
       user: userId,
-      deletedByUser: false, 
+      deletedByUser: false,
     })
       .populate("user")
-      .populate("cart");
+
 
     console.log(orders);
-
     return orders;
   } catch (error) {
+    console.error("Error fetching orders:", error);
     throw new Error("Failed to fetch orders for the user");
   }
 };
@@ -154,15 +153,15 @@ const updateOrderPaymentStatus = async (invoiceId: string, status: string) => {
 
     { invoiceId },
 
-    { paymentStatus:status },
+    { paymentStatus: status },
 
     { new: true }
   );
 };
 
-export const deleteSingleOrderById = async (id: string, role:string) => {
+export const deleteSingleOrderById = async (id: string, role: string) => {
 
- if (role === "admin") {
+  if (role === "admin") {
     // Hard delete
     return await OrderModel.findByIdAndDelete(id);
   } else {
@@ -177,7 +176,7 @@ export const deleteSingleOrderById = async (id: string, role:string) => {
 };
 
 
-export const OrderServices = { 
+export const OrderServices = {
   createOrder,
   getOrderByInvoice,
   updateOrderStatus,
@@ -185,6 +184,6 @@ export const OrderServices = {
   updateOrderPaymentStatus,
   getAllOrdersByUserId,
   deleteSingleOrderById
-  
 
- };
+
+};

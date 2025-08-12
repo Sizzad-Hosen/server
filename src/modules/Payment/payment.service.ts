@@ -7,9 +7,11 @@ import { OrderModel } from "../Orders/order.model";
 import { User } from "../Users/user.model";
 
 export const createCodPayment = async (orderId: string, userId: string) => {
-
-  const user = await User.findById({userId})
   
+  // ✅ Pass string directly
+  const user = await User.findById(userId);
+  if (!user) throw new Error("User not found");
+
   const order = await OrderModel.findById(orderId);
   if (!order) throw new Error("Order not found");
 

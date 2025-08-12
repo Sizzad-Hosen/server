@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { TOrder } from "./order.interface";
+import { optional } from "zod";
 
 const orderSchema = new Schema<TOrder>(
   {
@@ -11,8 +12,17 @@ const orderSchema = new Schema<TOrder>(
     cart: {
       type: Schema.Types.ObjectId,
       ref: "Cart",
-      required: true,
+      required: optional,
     },
+    items: [
+      {
+        productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+        title: { type: String, required: true },
+        price: { type: Number, required: true },
+        quantity: { type: Number, required: true },
+        image: { type: String, required: optional },
+      },
+    ],
     invoiceId: {
       type: String,
       required: true,

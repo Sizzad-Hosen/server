@@ -31,7 +31,7 @@ const loginUser = async (payload: TLoginUser) => {
   console.log('bcrypt compare time:', Date.now() - startBcrypt, 'ms');
 
 const jwtPayload = {
-  userId: (user._id as Types.ObjectId | string).toString(),
+  userId: user.id,  // string already
   role: user.role,
 };
 
@@ -67,10 +67,12 @@ const refreshToken = async (token: string) => {
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
   }
+
 const jwtPayload = {
-  userId: (user._id as Types.ObjectId | string).toString(),
+  userId: user.id, 
   role: user.role,
 };
+
 
   const jwtAccessExpiresIn = config.jwt_access_expires_in || "24h";  // ডিফল্ট
 
@@ -91,10 +93,12 @@ const forgetPassword = async (email: string) => {
     if (!user) {
       throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
     }
+
 const jwtPayload = {
-  userId: (user._id as Types.ObjectId | string).toString(),
+  userId: user.id,  // string already
   role: user.role,
 };
+
 
     const resetToken = createToken(
       jwtPayload,
