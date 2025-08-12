@@ -9,7 +9,9 @@ import { OrderServices } from "./order.service";
 export const createOrderHandler = catchAsync(async (req: Request, res: Response) => {
 
 
-  const userId = req?.user?.userId;
+const userId = req?.user?.userId;
+
+console.log("userId:", userId, "type:", typeof userId);
 
   if (!userId) throw new Error("Unauthorized");
 
@@ -140,7 +142,7 @@ export const updateOrderPaymentStatus = catchAsync(async (req: Request, res: Res
     });
   }
 
-  const updatedOrder = await OrderServices.updateOrderStatus(invoiceId, status);
+  const updatedOrder = await OrderServices.updateOrderPaymentStatus(invoiceId, status);
 
   if (!updatedOrder) {
     return res.status(httpStatus.NOT_FOUND).json({
