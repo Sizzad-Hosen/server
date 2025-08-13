@@ -24,15 +24,22 @@ export const getAllProducts = async (query: {
   const skip = (page - 1) * limit;
 
   const total = await CustomBazerProductModel.countDocuments(filter);
+
+  const totalPages = Math.ceil(total / limit);
+
   const products = await CustomBazerProductModel.find(filter)
     .skip(skip)
     .limit(limit);
 
   return {
-    total,
-    page,
-    limit,
-    products,
+    data:products,
+    meta:{
+      total,
+      page,
+      limit,
+      totalPages
+
+    }
   };
 };
 
