@@ -28,12 +28,10 @@ export const AllProductsController = async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Custom Bazer Products fetched successfully",
-    data: products.products, // the actual list
-    meta: {
-      total: products.total,
-      page: products.page,
-      limit: products.limit,
-    },
+    data:{
+      data:products.data,
+      meta:products.meta
+    }
   });
 };
 
