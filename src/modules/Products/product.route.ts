@@ -22,15 +22,21 @@ router.post('/create-product',
     validateRequest(ProductsValidationSchemas.createProductSchema),
 ProductControllers.createProductController)
 
-router.get('/',ProductControllers.getAllProductsController)
 
-router.get('/sub-products',ProductControllers.getRecentProductsInSub)
+// Get all products
+router.get('/', ProductControllers.getAllProductsController);
 
-router.get('/:id',auth("admin","customer"),ProductControllers.getProductByIdController)
+// Get recent sub-products
+router.get('/sub-products', ProductControllers.getRecentProductsInSub);
 
-router.patch('/:id',auth("admin"),ProductControllers.updateProductController)
+// Get single product by ID
+router.get('/:id', auth("admin","customer"), ProductControllers.getProductByIdController);
 
-router.delete('/:id',auth("admin"),ProductControllers.deleteProductController)
+// Update product by ID
+router.patch('/:id', auth("admin"), ProductControllers.updateProductController);
+
+// Delete product by ID
+router.delete('/:id', auth("admin"), ProductControllers.deleteProductController);
 
 export const ProductRoutes = router;
 

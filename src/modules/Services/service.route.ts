@@ -16,7 +16,7 @@ router.post('/create-service',
 router.get('/', ServiceControllers.getAllServicesController);
 
 
-router.get('/:id/categories-subcategories-products', ServiceControllers.getServiceFullTreeController);
+router.get('/:id/full-tree', ServiceControllers.getServiceFullTreeController);
 
 
 router.put('/:id',   auth("admin"), ServiceControllers.updateServiceController);

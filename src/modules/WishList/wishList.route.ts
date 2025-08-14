@@ -2,7 +2,7 @@
 import express from 'express';
 import { WishlistControllers } from './wishList.controller';
 import auth from '../../app/middlewares/auth';
-import { IWishlist } from './wishList.interface';
+
 
 const router = express.Router();
 
