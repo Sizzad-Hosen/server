@@ -26,7 +26,7 @@ const getAllUserController = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Successfully created new user",
+    message: "Successfully Retried new user",
      data: {
       data: alluser.data,   // students list
       meta: alluser.meta,   // pagination info
