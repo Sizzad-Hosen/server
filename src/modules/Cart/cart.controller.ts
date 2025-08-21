@@ -31,12 +31,10 @@ export const getCartController = catchAsync(async (req: Request, res: Response) 
 export const addToCartController = catchAsync(async (req: Request, res: Response) => {
   const userId = getUserId(req);
 
-  const item = req.body;
-  if (!item?.productId || item?.quantity == null || item?.price == null) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Missing required cart item fields');
-  }
+  console.log("body", req.body)
 
-  const updatedCart = await CartServices.addOrUpdateCartItem(userId, item);
+
+  const updatedCart = await CartServices.addOrUpdateCartItem(userId, req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

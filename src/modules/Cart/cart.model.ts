@@ -1,61 +1,36 @@
 import mongoose, { Schema, model, models, Types } from 'mongoose';
-import { TCart, TCartItem } from './cart.interface';
+import { TCart, TCartItem, IProductSize } from './cart.interface';
+
+// Schema for selected size
+const SelectedSizeSchema = new Schema<IProductSize>(
+  {
+    label: { type: String, required: [true, 'Selected size label is required'] },
+    price: { type: Number, required: [true, 'Selected size price is required'], min: 0 },
+  },
+  { _id: false }
+);
 
 // Schema for individual cart items
-export const CartItemSchema = new Schema<TCartItem>(
+const CartItemSchema = new Schema<TCartItem>(
   {
-    productId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Product',
-      required: [true, 'Product ID is required'],
-    },
-    title: {
-      type: String,
-      required: [true, 'Product title is required'],
-    },
-    price: {
-      type: Number,
-      required: [true, 'Product price is required'],
-      min: [0, 'Price must be a positive number'],
-    },
-    quantity: {
-      type: Number,
-      required: [true, 'Quantity is required'],
-      min: [1, 'Quantity must be at least 1'],
-    },
-    image: {
-      type: String,
-      default: '',
-    },
+    productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+    title: { type: String, required: true },
+    price: { type: Number, required: true, min: 0 },
+    quantity: { type: Number, required: true, min: 1 },
+    image: { type: String, default: '' },
+    discount: { type: Number, default: 0 },
+    selectedSize: { type: SelectedSizeSchema, required: true }, // <-- key fix
   },
-  { _id: false } 
+  { _id: false }
 );
 
 // Schema for entire cart
 const CartSchema = new Schema<TCart>(
   {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'User ID is required'],
-      unique: true, // one cart per user
-    },
-    items: {
-      type: [CartItemSchema],
-      default: [],
-    },
-    totalQuantity: {
-      type: Number,
-      required: true,
-      default: 0,
-      min: [0, 'Total quantity cannot be negative'],
-    },
-    totalAmount: {
-      type: Number,
-      required: true,
-      default: 0,
-      min: [0, 'Total amount cannot be negative'],
-    },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+    items: { type: [CartItemSchema], default: [] },
+    totalQuantity: { type: Number, required: true, default: 0, min: 0 },
+    totalAmount: { type: Number, required: true, default: 0, min: 0 },
   },
   { timestamps: true }
 );

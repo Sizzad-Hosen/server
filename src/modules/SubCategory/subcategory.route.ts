@@ -17,7 +17,7 @@ router.post(
 
 router.get('/', SubCategoryControlles.getAllSubCategoryController);
 
-router.get('/allProductsBySubId/:subcategoryId',auth("admin","customer"), SubCategoryControlles.getAllProductsBySubcategoryIdController);
+router.get('/allProductsBySubId/:subcategoryId', SubCategoryControlles.getAllProductsBySubcategoryIdController);
 
 router.get("/subcategoryByCategoryId/:categoryId",auth("admin","customer"), SubCategoryControlles.getSubcategoriesByCategoryIdController);
 

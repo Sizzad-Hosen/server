@@ -8,8 +8,9 @@ import { IGenericResponse, productSearchableField } from "./product.constance";
 import { IProduct } from "./product.interface";
 import Product from "./product.model";
 
-export const createProduct = async (payload: IProduct, files?:any) => {
 
+// ====================== CREATE PRODUCT ======================
+export const createProduct = async (payload: IProduct, files?: any) => {
   // ✅ 1. Check Service Exists
   const service = await Service.findById(payload.serviceId);
   if (!service) {
@@ -30,62 +31,53 @@ export const createProduct = async (payload: IProduct, files?:any) => {
 
   // ✅ 4. Upload images to Cloudinary if provided
   const uploadedImages: string[] = [];
-
-  console.log("upload image", uploadedImages)
-
   if (files && files.length > 0) {
     for (const file of files) {
       const imageName = `${Date.now()}-${file.originalname}`;
-      console.log("image name", imageName)
-
       const { secure_url } = await sendImageToCloudinary(imageName, file.path);
-      console.log("secure url", {secure_url})
-
       uploadedImages.push(secure_url);
-
     }
   }
 
-  // ✅ 5. Add images to payload
-
+  // ✅ 5. Add images + default discount if not set
   if (uploadedImages.length > 0) {
     payload.images = uploadedImages;
+  }
+  if (payload.discount === undefined) {
+    payload.discount = 0;
   }
 
   // ✅ 6. Create Product
   const product = await Product.create(payload);
-  console.log("product created", product)
-
   return product;
 };
 
-const numericFields = ['quantity', 'price'];
+
+// ====================== GET ALL PRODUCTS ======================
+const numericFields = ["quantity", "price", "discount"];
 
 const getAllProducts = async (
   filters: Record<string, unknown>
 ): Promise<IGenericResponse<IProduct[]>> => {
-  // Create a shallow copy to avoid mutating the original filters
   const sanitizedFilters = { ...filters };
 
-  // Sanitize numeric fields: convert valid numeric strings to numbers, remove invalid
-  numericFields.forEach(field => {
+  // ✅ sanitize numeric fields
+  numericFields.forEach((field) => {
     if (sanitizedFilters[field] !== undefined) {
       const value = sanitizedFilters[field];
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         const parsed = Number(value);
         if (!isNaN(parsed)) {
           sanitizedFilters[field] = parsed;
         } else {
-          // Invalid numeric filter - remove it or handle error
           delete sanitizedFilters[field];
-          // or throw an error, depending on your app logic
         }
       }
     }
   });
 
   const queryBuilder = new QueryBuilder<IProduct>(
-    Product.find(),
+    Product.find().populate("serviceId categoryId subCategoryId"),
     sanitizedFilters
   );
 
@@ -108,34 +100,62 @@ const getAllProducts = async (
   };
 };
 
-const updateProduct = async (id: string, payload: Partial<any>) => {
-  const updatedProduct = await Product.findByIdAndUpdate(id, payload, {
-    new: true,
-    runValidators: true,
-  });
+
+// ====================== UPDATE PRODUCT ======================
+export const updateProduct = async (id: string, payload: IProduct, files?: any) => {
+  // Handle image uploads if files provided
+  if (files && files.length > 0) {
+    const uploadedImages: string[] = [];
+    for (const file of files) {
+      const imageName = `${Date.now()}-${file.originalname}`;
+      const { secure_url } = await sendImageToCloudinary(imageName, file.path);
+      uploadedImages.push(secure_url);
+    }
+
+    // Merge uploaded images with existing ones if needed
+    payload.images = uploadedImages;
+  }
+
+  // Ensure sizes array is valid
+  if (payload.sizes) {
+    payload.sizes = payload.sizes.map(size => ({
+      label: size.label,
+      price: Number(size.price),
+    }));
+  }
+
+  const updatedProduct = await Product.findByIdAndUpdate(
+    id,
+    { $set: payload }, // use $set to replace fields properly
+    { new: true, runValidators: true }
+  );
 
   if (!updatedProduct) {
-    // Throw an error if no product found
-    throw new Error('Product not found');
+    throw new Error("Product not found");
   }
 
   return updatedProduct;
 };
 
- const deleteProduct= async (id: string) => {
 
+// ====================== DELETE PRODUCT ======================
+const deleteProduct = async (id: string) => {
   const deletedProduct = await Product.findByIdAndDelete(id);
-    return deletedProduct;
+  return deletedProduct;
+};
 
-  }
- const getSingelProduct= async (id: string) => {
 
-   const product = await Product.findById(id);
-    return product;
+// ====================== GET SINGLE PRODUCT ======================
+const getSingelProduct = async (id: string) => {
+  const product = await Product.findById(id).populate(
+    "serviceId categoryId subCategoryId"
+  );
+  return product;
+};
 
-  }
 
-  export interface SubcategoryProducts {
+// ====================== GET RECENT PRODUCTS BY SUBCATEGORY ======================
+export interface SubcategoryProducts {
   subcategory: TSubCategory;
   products: IProduct[];
 }
@@ -154,23 +174,24 @@ const getRecentProductsBySubcategory = async (
   page = 1,
   limit = 10
 ): Promise<PaginatedResult<IProduct>> => {
-  // Fetch all subcategories as plain objects
- const subcategories = await SubCategory.find().lean<{ _id: string }[]>();
-
+  // Fetch all subcategories
+  const subcategories = await SubCategory.find().lean<{ _id: string }[]>();
 
   let allProducts: IProduct[] = [];
 
   for (const subcat of subcategories) {
     const products = await Product.find({ subCategoryId: subcat._id })
       .sort({ createdAt: -1 })
-      .limit(2)
+      .limit(5)
       .lean<IProduct>();
 
     allProducts = allProducts.concat(products);
   }
 
-  // Sort by creation date descending
-  allProducts.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  // Sort all products by creation date
+  allProducts.sort(
+    (a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)
+  );
 
   const total = allProducts.length;
   const totalPages = Math.ceil(total / limit);
@@ -190,16 +211,13 @@ const getRecentProductsBySubcategory = async (
   };
 };
 
-export default getRecentProductsBySubcategory;
 
-
+// ====================== EXPORT SERVICES ======================
 export const ProductServices = {
-
-    createProduct,
-    getAllProducts,
-    updateProduct,
-    deleteProduct,
-    getSingelProduct,
-    getRecentProductsBySubcategory
-
-}
+  createProduct,
+  getAllProducts,
+  updateProduct,
+  deleteProduct,
+  getSingelProduct,
+  getRecentProductsBySubcategory,
+};

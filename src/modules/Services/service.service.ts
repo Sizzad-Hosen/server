@@ -4,6 +4,9 @@ import Product from "../Products/product.model";
 import { SubCategory } from "../SubCategory/subcategory.model";
 import { TServices } from "./service.interface";
 import { Service } from "./service.model";
+import QueryBuilder from "../../app/builder/QueryBuilder";
+import { productSearchableField } from "../Products/product.constance";
+import { getAllProductsBySubcategoryId } from "../SubCategory/subcategory.service";
 
 const createService = async (payload: TServices) => {
   const service = await Service.create(payload);
@@ -24,48 +27,46 @@ const updateService = async (id: string, payload: Partial<TServices>) => {
   return service;
 };
 
+export const getServiceFullTree = async (serviceId: string, query: any) => {
+  if (!Types.ObjectId.isValid(serviceId)) throw new Error("Invalid service ID");
 
-const getServiceFullTree = async (serviceId: string) => {
-  if (!Types.ObjectId.isValid(serviceId)) {
-    throw new Error("Invalid service ID");
-  }
-
-  // Step 1: Get all categories under the service
   const categories = await Category.find({ serviceId });
 
-  // Step 2: For each category, get its subcategories and their products
   const categoryData = await Promise.all(
     categories.map(async (category) => {
       const subcategories = await SubCategory.find({ categoryId: category._id });
 
       const subcategoryData = await Promise.all(
         subcategories.map(async (subcategory) => {
-          const products = await Product.find({ subcategoryId: subcategory._id });
+          
+          // Use your existing service to get products with pagination/meta
+          const productsWithMeta = await getAllProductsBySubcategoryId(subcategory._id.toString(), query);
 
           return {
             subcategory,
-            products,
+            products: productsWithMeta.data, // rename data -> products
+            meta: productsWithMeta.meta
           };
         })
       );
 
       return {
         category,
-        subcategories: subcategoryData,
+        subcategories: subcategoryData
       };
     })
   );
 
   return {
     serviceId,
-    categories: categoryData,
+    categories: categoryData
   };
 };
 
-const getSingelService = async(id:string)=>{
+const getSingelService = async (id: string) => {
 
 
-const service = await Service.findById(id);
+  const service = await Service.findById(id);
 
   return service;
 

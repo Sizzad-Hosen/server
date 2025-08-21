@@ -72,7 +72,7 @@ export const updateProductController = catchAsync(
     const { id } = req.params;
     const payload = req.body;
 
-    const result = await ProductServices.updateProduct(id, payload);
+    const result = await ProductServices.updateProduct(id, payload, req.files);
 
     sendResponse(res, {
       statusCode: httpStatus.OK,

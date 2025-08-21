@@ -1,16 +1,10 @@
-
-
 import { OrderModel } from "./order.model";
 import { generateInvoiceId } from "./order.utils";
 import { TOrder, TOrderItem } from "./order.interface";
-import { createCodPayment, createSslPayment } from "../Payment/payment.service";
 import { User } from "../Users/user.model";
 import { Cart } from "../Cart/cart.model";
-import httpStatus from "http-status";
-import AppError from "../../app/config/error/AppError";
 import QueryBuilder from "../../app/builder/QueryBuilder";
 import { ordersSearchableField } from "./order.constance";
-import { title } from "process";
 import { Types } from "mongoose";
 
 type CartItem = {
@@ -23,6 +17,8 @@ type CartItem = {
   price?: number;
   quantity: number;
   image?: string;
+  discount?: number;
+  selectedSize?: { label: string; price: number };
 };
 
 export const createOrder = async (
@@ -32,18 +28,41 @@ export const createOrder = async (
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
 
-  const cart = await Cart.findOne({ userId }).populate<{ items: Array<{ productId: { _id: Types.ObjectId; title: string; price?: number; image?: string } }> }>("items.productId");
+  const cart = await Cart.findOne({ userId }).populate<{
+    items: Array<CartItem>;
+  }>("items.productId");
 
   if (!cart || !cart.items.length) throw new Error("Cart is empty");
 
-  const items: TOrderItem[] = cart.items.map((item: CartItem) => ({
-    productId: item.productId._id,
-    title: item.productId.title,
-    price: item.price ?? item.productId.price ?? 0,
-    quantity: item.quantity,
-    image: item.image ?? item.productId.image ?? "https://via.placeholder.com/300x300.png?text=No+Image",
-  }));
-  const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  // Map cart items → order items
+  const items: TOrderItem[] = cart.items.map((item: CartItem) => {
+    const basePrice = item.price ?? item.productId.price ?? 0;
+    const quantity = item.quantity;
+    const discount = item.discount ?? 0;
+    const selectedSize = item.selectedSize ?? { label: "Default", price: basePrice };
+
+    const totalAmount = (basePrice * quantity) - ((basePrice * quantity * discount) / 100);
+
+    return {
+      productId: item.productId._id,
+      title: item.productId.title,
+      price: basePrice,
+      quantity,
+      image: item.image ?? item.productId.image ?? "https://via.placeholder.com/300x300.png?text=No+Image",
+      discount,
+      selectedSize,
+      totalAmount, // ✅ now part of TOrderItem
+    };
+  });
+
+  // Calculate totals
+  const totalQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
+  const totalAmount = items.reduce((acc, item) => acc + item.totalAmount, 0);
+
+  // Shipping cost
+  const shippingCost = orderData.deliveryOption === "insideRangpur" ? 0 : 50;
+  const grandTotal = totalAmount + shippingCost;
+
   const invoiceId = await generateInvoiceId();
 
   const order = new OrderModel({
@@ -51,7 +70,9 @@ export const createOrder = async (
     cart: cart._id,
     items,
     invoiceId,
-    totalPrice,
+    totalQuantity,
+    totalAmount,
+    grandTotal,
     paymentMethod: orderData.paymentMethod,
     address: orderData.address,
     orderStatus: "pending",
@@ -62,7 +83,7 @@ export const createOrder = async (
 
   const savedOrder = await order.save();
 
-  // Clear cart items after order saved
+  // Clear cart
   cart.items = [];
   await cart.save();
 
@@ -70,18 +91,14 @@ export const createOrder = async (
 };
 
 export const getOrderByInvoice = async (invoiceId: string) => {
-
-  return await OrderModel.findOne({ invoiceId }).populate('user');
-
+  return await OrderModel.findOne({ invoiceId }).populate("user");
 };
-
 
 export const getAllOrders = async (query: any, role: string, userId?: string) => {
   try {
     let baseQuery = OrderModel.find();
 
-    // If user is not admin, filter orders by user and exclude soft-deleted
-    if (role !== 'admin') {
+    if (role !== "admin") {
       baseQuery = baseQuery.where({
         user: userId,
         deletedByUser: false,
@@ -96,9 +113,9 @@ export const getAllOrders = async (query: any, role: string, userId?: string) =>
       .fields();
 
     orderQuery.modelQuery = orderQuery.modelQuery
-      .populate('user')
-      .populate('cart')
-      .populate('address');
+      .populate("user")
+      .populate("cart")
+      .populate("address");
 
     await orderQuery.countTotal();
 
@@ -114,23 +131,18 @@ export const getAllOrders = async (query: any, role: string, userId?: string) =>
       },
     };
   } catch (error) {
-    console.error('getAllOrders error:', error);
+    console.error("getAllOrders error:", error);
     throw error;
   }
 };
 
 export const getAllOrdersByUserId = async (userId: string) => {
   try {
-    console.log("ser userId", userId);
-
     const orders = await OrderModel.find({
       user: userId,
       deletedByUser: false,
-    })
-      .populate("user")
+    }).populate("user");
 
-
-    console.log(orders);
     return orders;
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -138,8 +150,7 @@ export const getAllOrdersByUserId = async (userId: string) => {
   }
 };
 
-
-const updateOrderStatus = async (invoiceId: string, status: string) => {
+export const updateOrderStatus = async (invoiceId: string, status: string) => {
   return await OrderModel.findOneAndUpdate(
     { invoiceId },
     { orderStatus: status },
@@ -147,34 +158,25 @@ const updateOrderStatus = async (invoiceId: string, status: string) => {
   );
 };
 
-const updateOrderPaymentStatus = async (invoiceId: string, status: string) => {
-
+export const updateOrderPaymentStatus = async (invoiceId: string, status: string) => {
   return await OrderModel.findOneAndUpdate(
-
     { invoiceId },
-
     { paymentStatus: status },
-
     { new: true }
   );
 };
 
 export const deleteSingleOrderById = async (id: string, role: string) => {
-
   if (role === "admin") {
-    // Hard delete
     return await OrderModel.findByIdAndDelete(id);
   } else {
-    // Soft delete (for regular users)
     const order = await OrderModel.findById(id);
     if (!order) return null;
-
     order.deletedByUser = true;
     await order.save();
     return order;
   }
 };
-
 
 export const OrderServices = {
   createOrder,
@@ -183,7 +185,5 @@ export const OrderServices = {
   getAllOrders,
   updateOrderPaymentStatus,
   getAllOrdersByUserId,
-  deleteSingleOrderById
-
-
+  deleteSingleOrderById,
 };

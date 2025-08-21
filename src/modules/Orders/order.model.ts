@@ -1,7 +1,13 @@
 import { Schema, model } from "mongoose";
-import { TOrder } from "./order.interface";
+import { IProductSize, TOrder } from "./order.interface";
 import { optional } from "zod";
-
+const SelectedSizeSchema = new Schema<IProductSize>(
+  {
+    label: { type: String, required: [true, 'Selected size label is required'] },
+    price: { type: Number, required: [true, 'Selected size price is required'], min: 0 },
+  },
+  { _id: false }
+);
 const orderSchema = new Schema<TOrder>(
   {
     user: {
@@ -19,8 +25,10 @@ const orderSchema = new Schema<TOrder>(
         productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
         title: { type: String, required: true },
         price: { type: Number, required: true },
+        selectedSize: { type: SelectedSizeSchema, required: true },
         quantity: { type: Number, required: true },
         image: { type: String, required: optional },
+        discount: { type: Number, optional: true }, // optional field
       },
     ],
     invoiceId: {
@@ -28,7 +36,7 @@ const orderSchema = new Schema<TOrder>(
       required: true,
       unique: true,
     },
-    totalPrice: {
+    grandTotal: {
       type: Number,
       required: true,
     },

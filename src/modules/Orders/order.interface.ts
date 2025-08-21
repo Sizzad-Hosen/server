@@ -14,21 +14,31 @@ export type TPaymentStatus = "pending" | "paid" | "success" | "failed";
 
 export type TDeliveryOption = "insideRangpur" | "outsideRangpur";
 
+export interface IProductSize {
+  label: string;
+  price: number;
+}
+
 export type TOrderItem = {
   productId: Types.ObjectId;
   title: string;
   price: number;
   quantity: number;
   image?: string;
-
+  discount?: number; 
+  selectedSize?: {
+    label: string;
+    price: number;
+  };
+  totalAmount: number; // ✅ Add this line
 };
-
 export type TOrder = {
   user: Types.ObjectId;
   cart?: Types.ObjectId; // optional, so empty cart won't break
   items: TOrderItem[];   // <-- snapshot field added
   invoiceId: string;
-  totalPrice: number;
+  selectedSize: IProductSize; 
+  grandTotal: number;
   orderStatus?: TOrderStatus;
   paymentMethod: TPaymentMethod;
   paymentStatus?: TPaymentStatus;

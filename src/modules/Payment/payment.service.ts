@@ -18,7 +18,7 @@ export const createCodPayment = async (orderId: string, userId: string) => {
   const codPayment = await PaymentModel.create({
     orderId: order._id,
     userId: order.user,
-    amount: order.totalPrice,
+    amount: order.grandTotal,
     method: "cash_on_delivery",
     status: "success",
     paidAt: new Date(),
@@ -52,7 +52,7 @@ export const createSslPayment = async (orderId: string, userId: string) => {
   const user = order.user as { email?: string } | undefined;
 
   const data = {
-    total_amount: order.totalPrice,
+    total_amount: order.grandTotal,
     currency: "BDT",
     tran_id: tran_id,
     success_url: `${process.env.FRONTEND_URL}/payments/success/${tran_id}`,
@@ -98,7 +98,7 @@ export const createSslPayment = async (orderId: string, userId: string) => {
     await PaymentModel.create({
       orderId: order._id,
       userId: order.user,
-      amount: order.totalPrice,
+      amount: order.grandTotal,
       method: "sslcommerz",
       status: "pending",
       transactionId: tran_id,

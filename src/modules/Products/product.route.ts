@@ -28,7 +28,12 @@ router.get('/sub-products',ProductControllers.getRecentProductsInSub)
 
 router.get('/:id',auth("admin","customer"),ProductControllers.getProductByIdController)
 
-router.patch('/:id',auth("admin"),ProductControllers.updateProductController)
+router.patch('/:id', auth("admin"),
+       upload.array('file'),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },ProductControllers.updateProductController)
 
 router.delete('/:id',auth("admin"),ProductControllers.deleteProductController)
 

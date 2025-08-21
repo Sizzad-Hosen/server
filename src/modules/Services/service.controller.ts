@@ -61,16 +61,15 @@ export const getAllServicesController = catchAsync(async (req, res) => {
 });
 
 export const getServiceFullTreeController = catchAsync(async (req: Request, res: Response) => {
-
   const { id } = req.params;
 
-  const data = await ServiceServices.getServiceFullTree(id);
+  const tree = await ServiceServices.getServiceFullTree(id, req.query);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Service with full category-subcategory-product tree fetched successfully",
-    data: data,
+    message: 'Service with full category-subcategory-product tree fetched successfully',
+    data: tree
   });
 });
 
