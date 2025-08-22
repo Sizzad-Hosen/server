@@ -44,9 +44,9 @@ const ProductSchema = new Schema(
       default: [],
     },
     stock: {
-      type: String,
+      type: Boolean,
       required: true,
-      min: [0, "Stock must be positive"],
+
     },
     serviceId: {
       type: Schema.Types.ObjectId,

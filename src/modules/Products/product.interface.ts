@@ -16,7 +16,7 @@ export interface IProduct {
   price: number;
   discount?: number;     // optional
   sizes: IProductSize[]; // product variations
-  stock: string;
+  stock: boolean;
   serviceId: Types.ObjectId;
   categoryId: Types.ObjectId;
   subCategoryId: Types.ObjectId;

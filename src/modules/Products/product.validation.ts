@@ -42,9 +42,7 @@ export const createProductSchema = z.object({
 
     sizes: z.array(productSizeSchema).optional(), 
 
-    stock: z
-      .string()
-      .min(0, { message: 'Stock must be greater than or equal to 0' }),
+    stock: z.boolean(),
 
     serviceId: z
       .string()
