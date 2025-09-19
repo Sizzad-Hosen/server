@@ -15,6 +15,12 @@ const subcategorySchema = z.object({
     required_error: 'Price per unit is required',
     invalid_type_error: 'Price must be a number',
   }).min(0, 'Price must be a positive number'),
+
+  size:z.string({
+    required_error: 'Size is required',
+    invalid_type_error: 'Size must be a string',
+  }).optional()
+
 });
 
 export const CreateProduct = z.object({

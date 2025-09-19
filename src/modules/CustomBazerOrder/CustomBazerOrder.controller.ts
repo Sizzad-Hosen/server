@@ -148,7 +148,39 @@ export const updateCustomOrderPaymentController = catchAsync(async (req: Request
     data: updatedCustomOrder,
   });
 });
+
+
+
+export const trackCustomBazarOrder = catchAsync(async (req: Request, res: Response) => {
+
+  const { invoiceId } = req.params;
+console.log("Tracking order with invoiceId:", invoiceId);
+  if (!invoiceId) {
+    return res.status(httpStatus.BAD_REQUEST).json({
+      success: false,
+      message: 'Invoice number is required',
+    });
+  }
+
+  const order = await CustomBazerOrderServices.getCustomBazarOrderByInvoice(invoiceId);
+
+  if (!order) {
+    return res.status(httpStatus.NOT_FOUND).json({
+      success: false,
+      message: 'CustomBazar Order not found',
+    });
+  }
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Track your order fetched successfully',
+    data: order,
+  });
+});
 export const CustomBazerOrderControllers = {
+  trackCustomBazarOrder
+  ,
 createOrderController,
 getOrdersController,
 getSingleOrderController,

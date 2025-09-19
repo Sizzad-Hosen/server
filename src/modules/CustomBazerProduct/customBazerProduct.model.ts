@@ -17,6 +17,10 @@ const subcategorySchema = new Schema(
       required: true,
       min: [0, 'Price must be a positive number'],
     },
+    size:{
+      type:String,
+      required:false
+    }
   },
   { _id: false }
 );

@@ -6,7 +6,8 @@ export interface TCustomBazerOrderItem {
   subcategoryName: string;          // e.g., "Apple" - must be in product.subcategories[]
   quantity: number;                 // e.g., 2 kg or 10 pieces
   unit: 'kg' | 'gm' | 'piece' | 'litre'; // match the subcategory unit
-  pricePerUnit: number;            // From subcategory
+  pricePerUnit: number; 
+  size?:string           // From subcategory
   totalPrice: number;              // quantity * pricePerUnit
 }
 export type TPaymentStatus = "pending" |"paid"| "success" | "failed";

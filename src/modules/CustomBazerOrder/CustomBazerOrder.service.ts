@@ -52,6 +52,7 @@ export const createOrderService = async (
         product: item.product,
         subcategoryName: item.subcategoryName,
         unit: item.unit,
+        size: item.size,
         pricePerUnit,
         quantity: item.quantity,
         totalPrice,
@@ -203,6 +204,11 @@ const updateCustomOrderPaymentStatus = async (invoiceId: string, status: string)
   );
 };
 
+
+export const getCustomBazarOrderByInvoice = async (invoiceId: string) => {
+  return await CustomBazarOrder.findOne({ invoiceId }).populate("user");
+};
+
 export const CustomBazerOrderServices = {
   createOrderService,
   getOrdersService,
@@ -210,5 +216,6 @@ export const CustomBazerOrderServices = {
   updateOrderStatus,
   getAllCustomOrdersByUserId,
   deleteSingleOrderById,
-  updateCustomOrderPaymentStatus
+  updateCustomOrderPaymentStatus,
+  getCustomBazarOrderByInvoice
 };

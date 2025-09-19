@@ -20,6 +20,7 @@ CustomBazerOrderControllers.createOrderController
 router.get('/',auth("admin"), CustomBazerOrderControllers.getOrdersController);
 
 router.get('/:id', CustomBazerOrderControllers.getSingleOrderController);
+router.get('/track/:invoiceId', CustomBazerOrderControllers.trackCustomBazarOrder);
 
 router.patch('/status/:invoiceId',
       auth("admin"),

@@ -8,6 +8,7 @@ export const customBazerOrderItemSchema = z.object({
     required_error: 'Unit is required',
     invalid_type_error: 'Unit must be one of kg, gm, piece, litre',
   }),
+  size:z.string().optional(),
   pricePerUnit: z.number().min(0, 'Price per unit must be at least 0'),
   quantity: z.number().min(1, 'Quantity must be at least 1'),
   totalPrice: z.number().min(0, 'Total price must be at least 0').optional(), // calculated on backend

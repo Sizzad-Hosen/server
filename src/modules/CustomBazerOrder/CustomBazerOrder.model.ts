@@ -25,6 +25,10 @@ const customBazarOrderItemSchema = new Schema({
     required: true,
     min: 0,
   },
+  size:{
+    type:String,
+    required:false
+  },
   totalPrice: {
     type: Number,
     required: true,
