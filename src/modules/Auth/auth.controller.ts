@@ -43,6 +43,7 @@ const refreshToken = catchAsync(async(req,res)=>{
     data: result,
   });
 });
+
 const forgetPassword = catchAsync(async (req, res) => {
   const { email } = req.body;
 
@@ -60,6 +61,7 @@ const forgetPassword = catchAsync(async (req, res) => {
 
 
 const resetPassword = catchAsync(async (req, res) => {
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -67,6 +69,7 @@ const resetPassword = catchAsync(async (req, res) => {
   }
 
   const token = authHeader.split(' ')[1]; // ✅ Extract JWT
+  console.log("backend token:", token);
 
   const result = await AuthServices.resetPassword(req.body, token);
 

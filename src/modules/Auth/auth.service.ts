@@ -6,9 +6,8 @@ import { createToken, verifyToken } from './auth.utils';
 import config from '../../app/config';
 import { sendEmail } from '../../app/utils/sendEmail';
 import bcrypt from 'bcrypt'
-import { Types } from 'mongoose';
 import {  Secret } from 'jsonwebtoken';
-import type { Jwt, SignOptions } from 'jsonwebtoken';
+import type { SignOptions } from 'jsonwebtoken';
 
 const loginUser = async (payload: TLoginUser) => {
   const { email, password } = payload;
@@ -83,75 +82,72 @@ const jwtPayload = {
   };
 };
 
+export const forgetPassword = async (email: string) => {
+  // 1️⃣ Find user
+  const user = await User.findOne({ email });
+  if (!user) throw new AppError(httpStatus.NOT_FOUND, `User with email ${email} not found`);
 
-const forgetPassword = async (email: string) => {
-  try {
-    // ✅ Check if the user exists by email
-    const user = await User.findOne({ email });
-    console.log('User found:', user);
+  // 2️⃣ Create JWT payload
+  const payload = { userId: user.id, role: user.role };
 
-    if (!user) {
-      throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
-    }
+  // 3️⃣ Generate reset token (30m expiry)
+  const resetToken = createToken(
+    payload,
+    config.jwt_access_secret as string,
+    (config.jwt_access_expires_in as SignOptions["expiresIn"]) || "30m"
+  );
 
-const jwtPayload = {
-  userId: user.id,  // string already
-  role: user.role,
+  // 4️⃣ Construct reset link
+  const resetLink = `${config.reset_pass_ui_link}/reset-password/${user.id}?token=${resetToken}`;
+
+  // 5️⃣ Fire email async (non-blocking)
+  sendEmail(
+    user.email,
+    "Reset Your Password - Clickei Bazar",
+    `<p>Hello ${user.name || "User"},</p>
+     <p>Click the link below to reset your password:</p>
+     <a href="${resetLink}">${resetLink}</a>
+     <p>This link will expire in 30 minutes.</p>`,
+    `Reset link: ${resetLink}`
+  ).catch(err => {
+    console.error("❌ Failed to send reset email:", err);
+  });
+
+  console.log(`🔑 Reset link generated for ${email}: ${resetLink}`);
+
+  return { resetLink, userId: user.id };
 };
-
-
-    const resetToken = createToken(
-      jwtPayload,
-      config.jwt_access_secret as string,
-      '10m'
-    );
-
-
-    const resetLink = `${config.reset_pass_ui_link}/${jwtPayload.userId}reset-password?token=${resetToken}`;
-
-    await sendEmail(user.email, resetLink);
-
-    console.log('Reset Password Link:', resetLink);
-    return resetLink;
-  } catch (error) {
-    console.error('Error in forgetPassword:', error);
-    throw error;
-  }
-};
-const resetPassword = async (
-  payload: { email: string; newPassword: string; oldPassword: string },
+export const resetPassword = async (
+  payload: { email: string; oldPassword: string; newPassword: string },
   token: string
 ) => {
-  const decoded = verifyToken(token, config.jwt_access_secret as string);
+  let decoded;
+  try {
+    decoded = verifyToken(token, config.jwt_access_secret as string);
+  } catch (err: any) {
+    if (err.name === "TokenExpiredError") throw new AppError(401, "Reset token has expired");
+    throw new AppError(401, "Invalid token");
+  }
 
   const user = await User.findById(decoded.userId).select('+password');
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
-  }
+  if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
 
-  if (payload.email !== user.email) {
-    throw new AppError(httpStatus.FORBIDDEN, 'You are forbidden!');
-  }
+  if (payload.email !== user.email) throw new AppError(httpStatus.FORBIDDEN, "Email mismatch");
 
   const isOldPasswordMatched = await bcrypt.compare(payload.oldPassword, user.password);
-  if (!isOldPasswordMatched) {
-    throw new AppError(httpStatus.FORBIDDEN, 'Your old password does not match');
-  }
+  if (!isOldPasswordMatched) throw new AppError(httpStatus.FORBIDDEN, "Old password does not match");
 
-  if (payload.oldPassword === payload.newPassword) {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      'Your new password is the same as the old password. Try a different one.'
-    );
-  }
+  if (payload.oldPassword === payload.newPassword)
+    throw new AppError(httpStatus.FORBIDDEN, "New password cannot be same as old password");
 
-  // ✅ Assign plain password
+  // ✅ Assign new password and hash via pre-save hook
   user.password = payload.newPassword;
-  user.set('passwordChangedAt', new Date());
-
-  // ✅ Pre-save hook will hash the password
+  user.set("passwordChangedAt", new Date());
   await user.save();
+
+  return { message: "Password reset successfully" };
 };
+
 
 
 
